@@ -4,10 +4,10 @@
 function pdoSqlConnect()
 {
     try {
-        $DB_HOST = "127.0.0.1";
-        $DB_NAME = "testDB";
-        $DB_USER = "root";
-        $DB_PW = "111111";
+        $DB_HOST = "13.124.163.139";
+        $DB_NAME = "coupang_eatsdb";
+        $DB_USER = "rp2remote";
+        $DB_PW = "i4abella";
         $pdo = new PDO("mysql:host=$DB_HOST;dbname=$DB_NAME", $DB_USER, $DB_PW);
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         return $pdo;
