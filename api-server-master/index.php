@@ -23,10 +23,13 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
 
     /* ******************   Test   ****************** */
     $r->addRoute('GET', '/', ['IndexController', 'index']);
+    $r->addRoute('POST', '/users', ['IndexController', 'createUser']);
+    $r->addRoute('POST', '/users/email', ['IndexController', 'checkEmail']);
+    $r->addRoute('POST', '/users/phone', ['IndexController', 'checkPhoneNumber']);
+    
     $r->addRoute('GET', '/users', ['IndexController', 'getUsers']);
     $r->addRoute('GET', '/users/{userIdx}', ['IndexController', 'getUserDetail']);
-    $r->addRoute('POST', '/user', ['IndexController', 'createUser']); // 비밀번호 해싱 예시 추가
-
+    
 
 
 //    $r->addRoute('GET', '/users', 'get_all_users_handler');

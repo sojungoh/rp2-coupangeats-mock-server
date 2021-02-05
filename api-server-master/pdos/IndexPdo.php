@@ -37,8 +37,7 @@ function getUserDetail($userIdx)
 }
 
 //READ
-function isValidUserIdx($userIdx)
-{
+function isValidUserIdx($userIdx){
     $pdo = pdoSqlConnect();
     $query = "select EXISTS(select * from Users where userIdx = ?) exist;";
 
@@ -54,18 +53,63 @@ function isValidUserIdx($userIdx)
     return $res[0]['exist'];
 }
 
-
-function createUser($ID, $pwd, $name)
-{
+function isEmailExist($email){
     $pdo = pdoSqlConnect();
-    $query = "INSERT INTO Users (ID, pwd, name) VALUES (?,?,?);";
+    $query = "SELECT EXISTS(SELECT * FROM `user` WHERE email = ?) AS emailExist;";
 
     $st = $pdo->prepare($query);
-    $st->execute([$ID, $pwd, $name]);
+    $st->execute([$email]);
+    
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
 
     $st = null;
     $pdo = null;
 
+    return $res[0]['emailExist'];
+}
+
+function isPhoneNumberExist($phoneNumber){
+    $pdo = pdoSqlConnect();
+    $query = "SELECT EXISTS(SELECT * FROM `user` WHERE phoneNumber = ?) AS exist;";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$phoneNumber]);
+    
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res[0]['exist'];
+}
+
+function getEmailByPhoneNumber($phoneNumber){
+    $pdo = pdoSqlConnect();
+    $query = "SELECT email FROM `user` WHERE phoneNumber = ? ORDER BY createdAt DESC limit 1;";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$phoneNumber]);
+    
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res[0]['email'];
+}
+
+function createUser($name, $phoneNumber, $email, $pwdHash){
+    $pdo = pdoSqlConnect();
+    $query = "INSERT INTO `user` (`name`, phoneNumber, email, `password`) VALUES (?, ?, ?, ?);";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$name, $phoneNumber, $email, $pwdHash]);
+
+    $st = null;
+    $pdo = null;
 }
 
 

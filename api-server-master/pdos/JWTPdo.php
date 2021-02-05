@@ -4,7 +4,6 @@ function isValidUser($ID, $pwd){
     $pdo = pdoSqlConnect();
     $query = "SELECT ID, pwd as hash FROM Users WHERE ID= ?;";
 
-
     $st = $pdo->prepare($query);
     $st->execute([$ID]);
     $st->setFetchMode(PDO::FETCH_ASSOC);
