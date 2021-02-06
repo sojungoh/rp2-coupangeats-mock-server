@@ -1,32 +1,13 @@
 <?php
 
 //READ
-function getUsers()
-{
+function getUserDetail($userID){
     $pdo = pdoSqlConnect();
-    $query = "select * from Users;";
+    $query = "select * from `user` where id = ?;";
 
     $st = $pdo->prepare($query);
-    //    $st->execute([$param,$param]);
-    $st->execute([]);
-    $st->setFetchMode(PDO::FETCH_ASSOC);
-    $res = $st->fetchAll();
-
-    $st = null;
-    $pdo = null;
-
-    return $res;
-}
-
-//READ
-function getUserDetail($userIdx)
-{
-    $pdo = pdoSqlConnect();
-    $query = "select * from Users where userIdx = ?;";
-
-    $st = $pdo->prepare($query);
-    $st->execute([$userIdx]);
-    //    $st->execute();
+    $st->execute([$userID]);
+    
     $st->setFetchMode(PDO::FETCH_ASSOC);
     $res = $st->fetchAll();
 
@@ -37,13 +18,13 @@ function getUserDetail($userIdx)
 }
 
 //READ
-function isValidUserIdx($userIdx){
+function isUserIDExist($userID){
     $pdo = pdoSqlConnect();
-    $query = "select EXISTS(select * from Users where userIdx = ?) exist;";
+    $query = "select EXISTS(select * from `user` where id = ?) exist;";
 
     $st = $pdo->prepare($query);
-    $st->execute([$userIdx]);
-    //    $st->execute();
+    $st->execute([$userID]);
+    
     $st->setFetchMode(PDO::FETCH_ASSOC);
     $res = $st->fetchAll();
 
@@ -110,6 +91,37 @@ function createUser($name, $phoneNumber, $email, $pwdHash){
 
     $st = null;
     $pdo = null;
+}
+
+function getUserID($email){
+    $pdo = pdoSqlConnect();
+    $query = "SELECT id FROM `user` WHERE email = ?;";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$email]);
+    
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res[0]['id'];
+}
+
+function checkPassword($email, $password){
+    $pdo = pdoSqlConnect();
+    $query = "SELECT `password` AS hash FROM `user` WHERE email = ?;";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$email]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st=null;
+    $pdo = null;
+
+    return password_verify($password, $res[0]['hash']);
 }
 
 
