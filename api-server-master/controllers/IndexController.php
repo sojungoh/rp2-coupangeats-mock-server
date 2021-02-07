@@ -3,7 +3,6 @@ require dirname(__FILE__) . '/function.php';
 require './vendor/autoload.php';
 
 use Twilio\Rest\Client;
-use Twilio\Exceptions\RestException;
 
 const JWT_SECRET_KEY = "TEST_KEYTEST_KEYTEST_KEYTEST_KEYTEST_KEYTEST_KEYTEST_KEYTEST_KEYTEST_KEYTEST_KEYTEST_KEYTEST_KEYTEST_KEY";
 
@@ -31,7 +30,7 @@ try {
             break;
       
         case "getUserDetail":
-            http_response_code(1000);
+            http_response_code(200);
 
             $userID = $vars["userID"];
 
@@ -51,7 +50,7 @@ try {
             break;
         
         case "createUser":
-            http_response_code(1000);
+            http_response_code(200);
     
             $email = $req->emailAddress;
             $pwdHash = password_hash($req->password, PASSWORD_DEFAULT);
@@ -74,7 +73,7 @@ try {
                 echo json_encode($res);
                 break;
             }
-            
+
             createUser($name, $phoneNumber, $email, $pwdHash);
     
             $userID = getUserID($email);
@@ -98,7 +97,7 @@ try {
     
     
         case "checkEmail":
-            http_response_code(1000);
+            http_response_code(200);
             $email = $req->emailAddress;
                 
             if(isEmailExist($email)){
@@ -116,7 +115,7 @@ try {
             break;
     
         case "checkPhoneNumber":
-            http_response_code(1000);
+            http_response_code(200);
             $phoneNumber = $req->phoneNumber;
 
             if (!preg_match('/^(010|011|016|017|018|019)[^0][0-9]{4}[0-9]{1,4}/', $phoneNumber)) {
@@ -143,7 +142,7 @@ try {
             break;    
 
         case "userAuth":
-            http_response_code(1000);
+            http_response_code(200);
             $phoneNumber = $req->phoneNumber;
             $_SESSION['randomCode'] = mt_rand(100000, 999999);
 
@@ -175,7 +174,7 @@ try {
             break;
 
         case "verifyCode":
-            http_response_code(1000);
+            http_response_code(200);
             $smsCode = $req->smsCode;
 
             if($_SESSION['randomCode'] == null){
@@ -201,7 +200,7 @@ try {
             break;
         
         case "userLogin":
-            http_response_code(1000);
+            http_response_code(200);
 
             $email = $req->emailAddress;
             $password = $req->password;
