@@ -10,8 +10,6 @@ $res = (object)array();
 header('Content-Type: application/json; charset=UTF-8');
 $req = json_decode(file_get_contents("php://input"));
 
-session_start();
-
 try {
     addAccessLogs($accessLogs, $req);
     switch ($handler) {
@@ -74,6 +72,14 @@ try {
                 break;
             }
 
+            if (!preg_match('/^(010|011|016|017|018|019)[^0][0-9]{2,4}[0-9]{4}/', $phoneNumber)) {
+                $res->isSuccess = FALSE;
+                $res->code = 2005;
+                $res->message = "유효하지 않은 휴대폰 번호입니다.";
+                echo json_encode($res, JSON_UNESCAPED_UNICODE);
+                break;
+            }
+
             createUser($name, $phoneNumber, $email, $pwdHash);
     
             $userID = getUserID($email);
@@ -118,7 +124,7 @@ try {
             http_response_code(200);
             $phoneNumber = $req->phoneNumber;
 
-            if (!preg_match('/^(010|011|016|017|018|019)[^0][0-9]{4}[0-9]{1,4}/', $phoneNumber)) {
+            if (!preg_match('/^(010|011|016|017|018|019)[^0][0-9]{2,4}[0-9]{4}/', $phoneNumber)) {
                 $res->isSuccess = FALSE;
                 $res->code = 2005;
                 $res->message = "유효하지 않은 휴대폰 번호입니다.";
@@ -142,11 +148,15 @@ try {
             break;    
 
         case "userAuth":
+            session_start();
+
             http_response_code(200);
+            
             $phoneNumber = $req->phoneNumber;
+
             $_SESSION['randomCode'] = mt_rand(100000, 999999);
 
-            if (!preg_match('/^(010|011|016|017|018|019)[^0][0-9]{4}[0-9]{1,4}/', $phoneNumber)) {
+            if (!preg_match('/^(010|011|016|017|018|019)[^0][0-9]{2,4}[0-9]{4}/', $phoneNumber)) {
                 $res->isSuccess = FALSE;
                 $res->code = 2005;
                 $res->message = "유효하지 않은 휴대폰 번호입니다.";
@@ -160,13 +170,16 @@ try {
 
             $client = new Client($account_sid, $auth_token);
         
-            $client->messages->create(// Where to send a text message (your cell phone?)
-                    "+82{$phoneNumber}",
-                    array(
-                        'from' => $twilio_number,
-                        'body' => "{$_SESSION['randomCode']}"
-                    )
-            );
+            //$client->messages->create(// Where to send a text message (your cell phone?)
+            //        "+82{$phoneNumber}",
+            //        array(
+            //            'from' => $twilio_number,
+            //            'body' => "소이 - 쿠팡이츠 휴대폰 인증번호 [{$_SESSION['randomCode']}] 위 번호를 인증 창에 입력하세요."
+            //        )
+            //);
+            $res->result = new stdClass();
+            $res->result->sessionID = session_id();
+            $res->result->code = $_SESSION['randomCode'];
             $res->isSuccess = TRUE;
             $res->code = 1000;
             $res->message = "입력하신 번호로 인증번호가 발송되었습니다.";
@@ -175,9 +188,15 @@ try {
 
         case "verifyCode":
             http_response_code(200);
+
+            session_id($_SERVER['HTTP_SESSION_ID']);
+            session_start();
+ 
+            $sessionCode = $_SESSION['randomCode']; 
+
             $smsCode = $req->smsCode;
 
-            if($_SESSION['randomCode'] == null){
+            if(!isset($sessionCode)){
                 $res->isSuccess = FALSE;
                 $res->code = 2006;
                 $res->message = "인증번호가 발급되지 않았습니다.";
@@ -185,7 +204,7 @@ try {
                 break;
             }
 
-            if($smsCode != $_SESSION['randomCode']){
+            if($smsCode != $sessionCode){
                 $res->isSuccess = FALSE;
                 $res->code = 2007;
                 $res->message = "인증번호가 일치하지 않습니다. 확인 후 다시 이용하여 주세요.";

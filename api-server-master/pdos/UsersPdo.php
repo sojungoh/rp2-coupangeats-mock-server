@@ -124,7 +124,6 @@ function checkPassword($email, $password){
     return password_verify($password, $res[0]['hash']);
 }
 
-
 // CREATE
 //    function addMaintenance($message){
 //        $pdo = pdoSqlConnect();

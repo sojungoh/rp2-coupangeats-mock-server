@@ -1,7 +1,7 @@
 <?php
 
 require './pdos/DatabasePdo.php';
-require './pdos/IndexPdo.php';
+require './pdos/UsersPdo.php';
 require './pdos/JWTPdo.php';
 require './vendor/autoload.php';
 
@@ -18,18 +18,20 @@ ini_set("display_errors", 1);
 
 //Main Server API
 $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) {
-    /* ******************   Test   ****************** */
+    
+    /* ******************   Users   ****************** */
 
-    $r->addRoute('GET', '/', ['IndexController', 'index']);
-    $r->addRoute('POST', '/users', ['IndexController', 'createUser']);
-    $r->addRoute('GET', '/users/{userID}', ['IndexController', 'getUserDetail']);
-    $r->addRoute('POST', '/users/email', ['IndexController', 'checkEmail']);
-    $r->addRoute('POST', '/users/phone', ['IndexController', 'checkPhoneNumber']);
-    $r->addRoute('POST', '/users/auth', ['IndexController', 'userAuth']);
-    $r->addRoute('POST', '/users/auth/code', ['IndexController', 'verifyCode']);
-    $r->addRoute('POST', '/users/login', ['IndexController', 'userLogin']);
+    $r->addRoute('GET', '/', ['UsersController', 'index']);
+    $r->addRoute('POST', '/users', ['UsersController', 'createUser']);
+    $r->addRoute('GET', '/users/{userID}', ['UsersController', 'getUserDetail']);
+    $r->addRoute('POST', '/users/email', ['UsersController', 'checkEmail']);
+    $r->addRoute('POST', '/users/phone', ['UsersController', 'checkPhoneNumber']);
+    $r->addRoute('POST', '/users/auth', ['UsersController', 'userAuth']);
+    $r->addRoute('POST', '/users/auth/code', ['UsersController', 'verifyCode']);
+    $r->addRoute('POST', '/users/login', ['UsersController', 'userLogin']);
 
     /* ******************   JWT   ****************** */
+    
     $r->addRoute('POST', '/jwt', ['JWTController', 'createJwt']);   // JWT 생성: 로그인 + 해싱된 패스워드 검증 내용 추가
     $r->addRoute('GET', '/jwt', ['JWTController', 'validateJwt']);  // JWT 유효성 검사
     
@@ -79,10 +81,10 @@ switch ($routeInfo[0]) {
         $vars = $routeInfo[2];
 
         switch ($routeInfo[1][0]) {
-            case 'IndexController':
+            case 'UsersController':
                 $handler = $routeInfo[1][1];
                 $vars = $routeInfo[2];
-                require './controllers/IndexController.php';
+                require './controllers/UsersController.php';
                 break;
             case 'JWTController':
                 $handler = $routeInfo[1][1];
