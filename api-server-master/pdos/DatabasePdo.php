@@ -1,6 +1,6 @@
 <?php
 
-//DB 정보
+//soi 테스트용 DB
 function pdoSqlConnect()
 {
     try {

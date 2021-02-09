@@ -18,7 +18,9 @@ ini_set("display_errors", 1);
 
 //Main Server API
 $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) {
-    
+    /* Controller 는 UserController, JWTController 이렇게 나눠서 진행할게요!
+       헤더님은 restaurantController 이런 식으로 Controller 폴더 밑에 파일 생성하시고
+       index.php 밑에 switch 문에서 case만 추가해서 적용해주시면 됩니다 */
     /* ******************   Users   ****************** */
 
     $r->addRoute('GET', '/', ['UsersController', 'index']);
@@ -34,12 +36,7 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
     
     $r->addRoute('POST', '/jwt', ['JWTController', 'createJwt']);   // JWT 생성: 로그인 + 해싱된 패스워드 검증 내용 추가
     $r->addRoute('GET', '/jwt', ['JWTController', 'validateJwt']);  // JWT 유효성 검사
-    
-//    $r->addRoute('GET', '/users', 'get_all_users_handler')
-//    // {id} must be a number (\d+)
-//    $r->addRoute('GET', '/user/{id:\d+}', 'get_user_handler');
-//    // The /{title} suffix is optional
-//    $r->addRoute('GET', '/articles/{id:\d+}[/{title}]', 'get_article_handler');
+
 });
 
 // Fetch method and URI from somewhere

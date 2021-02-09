@@ -1,6 +1,5 @@
 <?php
 
-//READ
 function getUserDetail($userID){
     $pdo = pdoSqlConnect();
     $query = "select * from `user` where id = ?;";
@@ -17,7 +16,6 @@ function getUserDetail($userID){
     return $res[0];
 }
 
-//READ
 function isUserIDExist($userID){
     $pdo = pdoSqlConnect();
     $query = "select EXISTS(select * from `user` where id = ?) exist;";
