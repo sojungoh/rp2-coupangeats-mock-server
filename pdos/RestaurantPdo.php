@@ -9,7 +9,7 @@ function getCategories()
               ORDER BY id;";
 
     $st = $pdo->prepare($query);
-    $st->execute([]);
+    $st->execute();
     //    $st->execute();
     $st->setFetchMode(PDO::FETCH_ASSOC);
     $res = $st->fetchAll();
