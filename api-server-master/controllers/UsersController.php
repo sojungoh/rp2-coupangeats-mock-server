@@ -170,16 +170,15 @@ try {
 
             $client = new Client($account_sid, $auth_token);
         
-            //$client->messages->create(// Where to send a text message (your cell phone?)
-            //        "+82{$phoneNumber}",
-            //        array(
-            //            'from' => $twilio_number,
-            //            'body' => "소이 - 쿠팡이츠 휴대폰 인증번호 [{$_SESSION['randomCode']}] 위 번호를 인증 창에 입력하세요."
-            //        )
-            //);
+            $client->messages->create(// Where to send a text message (your cell phone?)
+                    "+82{$phoneNumber}",
+                    array(
+                        'from' => $twilio_number,
+                        'body' => "소이 - 쿠팡이츠 휴대폰 인증번호 [{$_SESSION['randomCode']}] 위 번호를 인증 창에 입력하세요."
+                    )
+            );
             $res->result = new stdClass();
             $res->result->sessionID = session_id();
-            $res->result->code = $_SESSION['randomCode'];
             $res->isSuccess = TRUE;
             $res->code = 1000;
             $res->message = "입력하신 번호로 인증번호가 발송되었습니다.";

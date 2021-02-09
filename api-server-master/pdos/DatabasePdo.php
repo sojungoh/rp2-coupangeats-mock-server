@@ -15,3 +15,19 @@ function pdoSqlConnect()
         echo $e->getMessage();
     }
 }
+
+//RDS 개발용 DB
+// function pdoSqlConnect()
+// {
+//     try {
+//         $DB_HOST = "coupang-eatsdb.cr4fbdipsnjz.ap-northeast-2.rds.amazonaws.com";
+//         $DB_NAME = "coupangeatsdb";
+//         $DB_USER = "soi";
+//         $DB_PW = "i4abella3514";
+//         $pdo = new PDO("mysql:host=$DB_HOST;dbname=$DB_NAME", $DB_USER, $DB_PW);
+//         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+//         return $pdo;
+//     } catch (\Exception $e) {
+//         echo $e->getMessage();
+//     }
+// }
