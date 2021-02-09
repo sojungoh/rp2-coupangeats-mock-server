@@ -3,6 +3,7 @@
 require './pdos/DatabasePdo.php';
 require './pdos/UsersPdo.php';
 require './pdos/JWTPdo.php';
+require './pdos/RestaurantPdo.php';
 require './vendor/autoload.php';
 
 use \Monolog\Logger as Logger;
@@ -18,9 +19,8 @@ ini_set("display_errors", 1);
 
 //Main Server API
 $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) {
-    /* Controller 는 UserController, JWTController 이렇게 나눠서 진행할게요!
-       헤더님은 restaurantController 이런 식으로 Controller 폴더 밑에 파일 생성하시고
-       index.php 밑에 switch 문에서 case만 추가해서 적용해주시면 됩니다 */
+    /* Controller 는 UsersController, RestaurantController 등 나눠서 진행할게요! */
+    
     /* ******************   Users   ****************** */
 
     $r->addRoute('GET', '/', ['UsersController', 'index']);
@@ -31,6 +31,11 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
     $r->addRoute('POST', '/users/auth', ['UsersController', 'userAuth']);
     $r->addRoute('POST', '/users/auth/code', ['UsersController', 'verifyCode']);
     $r->addRoute('POST', '/users/login', ['UsersController', 'userLogin']);
+
+    /* ******************   Restaurant   ****************** */
+
+    $r->addRoute('GET', '/categories', ['RestaurantController', 'categories']); //검색화면 카테고리 조회
+    $r->addRoute('GET', '/filters', ['RestaurantController', 'filters']); //필터 항목 조회
 
     /* ******************   JWT   ****************** */
     
@@ -88,11 +93,12 @@ switch ($routeInfo[0]) {
                 $vars = $routeInfo[2];
                 require './controllers/JWTController.php';
                 break;
-            /*case 'EventController':
-                $handler = $routeInfo[1][1]; $vars = $routeInfo[2];
-                require './controllers/EventController.php';
+            case 'RestaurantController':
+                $handler = $routeInfo[1][1]; 
+                $vars = $routeInfo[2];
+                require './controllers/RestaurantController.php';
                 break;
-            case 'ProductController':
+            /*case 'ProductController':
                 $handler = $routeInfo[1][1]; $vars = $routeInfo[2];
                 require './controllers/ProductController.php';
                 break;
