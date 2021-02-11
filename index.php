@@ -4,6 +4,7 @@ require './pdos/DatabasePdo.php';
 require './pdos/UsersPdo.php';
 require './pdos/JWTPdo.php';
 require './pdos/RestaurantPdo.php';
+require './pdos/AddressPdo.php';
 require './vendor/autoload.php';
 
 use \Monolog\Logger as Logger;
@@ -36,6 +37,9 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
 
     $r->addRoute('GET', '/categories', ['RestaurantController', 'categories']); //검색화면 카테고리 조회
     $r->addRoute('GET', '/filters', ['RestaurantController', 'filters']); //필터 항목 조회
+
+    /* ******************   Address   ****************** */
+    $r->addRoute('POST', '/address', ['AddressController', 'addUserAddress']);
 
     /* ******************   JWT   ****************** */
     
@@ -98,11 +102,11 @@ switch ($routeInfo[0]) {
                 $vars = $routeInfo[2];
                 require './controllers/RestaurantController.php';
                 break;
-            /*case 'ProductController':
+            case 'AddressController':
                 $handler = $routeInfo[1][1]; $vars = $routeInfo[2];
-                require './controllers/ProductController.php';
+                require './controllers/AddressController.php';
                 break;
-            case 'SearchController':
+            /*case 'SearchController':
                 $handler = $routeInfo[1][1]; $vars = $routeInfo[2];
                 require './controllers/SearchController.php';
                 break;
