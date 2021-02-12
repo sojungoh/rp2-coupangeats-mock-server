@@ -40,7 +40,13 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
 
     /* ******************   Address   ****************** */
     $r->addRoute('POST', '/address', ['AddressController', 'addUserAddress']);
-
+    $r->addRoute('GET', '/address', ['AddressController', 'getUserAddressList']);
+    $r->addRoute('PATCH', '/address', ['AddressController', 'setDeliveryAddress']);
+    $r->addRoute('GET', '/address/verify', ['AddressController', 'checkUserAddressType']);
+    $r->addRoute('GET', '/address/{userAddressID}', ['AddressController', 'getUserAddress']);
+    $r->addRoute('PUT', '/address/{userAddressID}', ['AddressController', 'editUserAddress']);
+    $r->addRoute('DELETE', '/address/{userAddressID}', ['AddressController', 'deleteUserAddress']);
+    
     /* ******************   JWT   ****************** */
     
     $r->addRoute('POST', '/jwt', ['JWTController', 'createJwt']);   // JWT 생성: 로그인 + 해싱된 패스워드 검증 내용 추가
