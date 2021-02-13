@@ -26,7 +26,7 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
 
     $r->addRoute('GET', '/', ['UsersController', 'index']);
     $r->addRoute('POST', '/users', ['UsersController', 'createUser']);
-    $r->addRoute('GET', '/users/{userID}', ['UsersController', 'getUserDetail']);
+    $r->addRoute('GET', '/users/detail', ['UsersController', 'getUserDetail']);
     $r->addRoute('POST', '/users/email', ['UsersController', 'checkEmail']);
     $r->addRoute('POST', '/users/phone', ['UsersController', 'checkPhoneNumber']);
     $r->addRoute('POST', '/users/auth', ['UsersController', 'userAuth']);
