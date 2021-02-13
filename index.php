@@ -5,6 +5,7 @@ require './pdos/UsersPdo.php';
 require './pdos/JWTPdo.php';
 require './pdos/RestaurantPdo.php';
 require './pdos/AddressPdo.php';
+require './pdos/CouponsPdo.php';
 require './vendor/autoload.php';
 
 use \Monolog\Logger as Logger;
@@ -46,7 +47,11 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
     $r->addRoute('GET', '/address/{userAddressID}', ['AddressController', 'getUserAddress']);
     $r->addRoute('PUT', '/address/{userAddressID}', ['AddressController', 'editUserAddress']);
     $r->addRoute('DELETE', '/address/{userAddressID}', ['AddressController', 'deleteUserAddress']);
-    
+
+    /* ******************   Coupons   ****************** */
+    $r->addRoute('GET', '/coupons', ['CouponsController', 'getRestaurantCoupon']);
+    $r->addRoute('POST', '/coupons', ['CouponsController', 'issueCoupon']);
+
     /* ******************   JWT   ****************** */
     
     $r->addRoute('POST', '/jwt', ['JWTController', 'createJwt']);   // JWT 생성: 로그인 + 해싱된 패스워드 검증 내용 추가
@@ -112,11 +117,11 @@ switch ($routeInfo[0]) {
                 $handler = $routeInfo[1][1]; $vars = $routeInfo[2];
                 require './controllers/AddressController.php';
                 break;
-            /*case 'SearchController':
+            case 'CouponsController':
                 $handler = $routeInfo[1][1]; $vars = $routeInfo[2];
-                require './controllers/SearchController.php';
+                require './controllers/CouponsController.php';
                 break;
-            case 'ReviewController':
+            /*case 'ReviewController':
                 $handler = $routeInfo[1][1]; $vars = $routeInfo[2];
                 require './controllers/ReviewController.php';
                 break;
