@@ -9,6 +9,7 @@ $req = json_decode(file_get_contents("php://input"));
 try {
     addAccessLogs($accessLogs, $req);
     switch ($handler) {
+
         /* ************************       HeatherAPI      ************************ */
         /*
          * API No. 1
@@ -37,6 +38,82 @@ try {
             $res->message = "검색필터 항목조회 성공";
             echo json_encode($res, JSON_NUMERIC_CHECK);
             break;
+
+        /*
+         * API No. 3
+         * API Name : 필터적용 검색 API
+         * 마지막 수정 날짜 : 21.02.10
+         */
+        case "filterSearch":
+            http_response_code(200);
+
+            $category = $_GET['category'];
+            $align = $_GET['align'];
+            $isCheetah = $_GET['isCheetah'];
+            $deliveryFee = $_GET['deliveryFee'];
+            $minimumOrder = $_GET['minimumOrder'];
+            $coupone = $_GET['coupone'];
+
+            $res->result = getFilterSearch($category, $align, $isCheetah, $deliveryFee, $minimumOrder, $coupone);
+            $res->isSuccess = TRUE;
+            $res->code = 1000;
+            $res->message = "필터적용 검색 성공";
+            echo json_encode($res, JSON_NUMERIC_CHECK);
+            break;
+
+        /*
+         * API No. 4
+         * API Name : 음식점 기본 정보 조회 API
+         * 마지막 수정 날짜 : 21.02.10
+         */
+        case "basicInfo":
+            http_response_code(200);
+
+            $restaurantID = $vars['restaurantID'];
+
+//            if(!$restaurantID) {
+//                $res->isSuccess = FALSE;
+//                $res->code = 2008;
+//                $res->message = "restaurantID를 입력하세요.";
+//                echo json_encode($res, JSON_NUMERIC_CHECK);
+//                break;
+//            }
+//
+//            else
+            if(!isValidRestaurantID($restaurantID)) {
+                $res->isSuccess = FALSE;
+                $res->code = 2008;
+                $res->message = "유효하지 않은 restaurantID입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+
+            else {
+                $res->result = basicInfo($restaurantID);
+                $res->isSuccess = TRUE;
+                $res->code = 1000;
+                $res->message = "음식점 기본정보 조회 성공";
+                echo json_encode($res, JSON_UNESCAPED_UNICODE);
+                break;
+            }
+
+        /*
+         * API No. 5
+         * API Name : 음식점 메뉴 조회 API
+         * 마지막 수정 날짜 : 21.02.10
+         */
+        case "getMenu":
+            http_response_code(200);
+
+            $restaurantID = $vars['restaurantID'];
+
+            $res->result = getMenu($restaurantID);
+            $res->isSuccess = TRUE;
+            $res->code = 1000;
+            $res->message = "음식점 메뉴 조회 성공";
+            echo json_encode($res, JSON_NUMERIC_CHECK);
+            break;
+
     }
 } catch (\Exception $e) {
     return getSQLErrorException($errorLogs, $e, $req);

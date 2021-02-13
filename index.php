@@ -34,8 +34,12 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
 
     /* ******************   Restaurant   ****************** */
 
-    $r->addRoute('GET', '/categories', ['RestaurantController', 'categories']); //검색화면 카테고리 조회
-    $r->addRoute('GET', '/filters', ['RestaurantController', 'filters']); //필터 항목 조회
+    $r->addRoute('GET', '/categories', ['RestaurantController', 'categories']);
+    $r->addRoute('GET', '/filters', ['RestaurantController', 'filters']);
+    $r->addRoute('GET', '/restaurants', ['RestaurantController', 'filterSearch']);
+    $r->addRoute('GET', '/basic-info/{restaurantID}', ['RestaurantController', 'basicInfo']);
+    $r->addRoute('GET', '/menu/{restaurantID}', ['RestaurantController', 'getMenu']);
+
 
     /* ******************   JWT   ****************** */
     
