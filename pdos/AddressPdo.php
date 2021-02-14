@@ -16,12 +16,12 @@ function isAddressExist($x, $y){
     return $res[0]['exist'];
 }
 
-function addAddress($x, $y){
+function addAddress($address, $buildingName, $x, $y){
     $pdo = pdoSqlConnect();
-    $query = "INSERT INTO address (x, y) VALUES (?, ?);";
+    $query = "INSERT INTO address (address, buildingName, x, y) VALUES (?, ?, ?, ?);";
 
     $st = $pdo->prepare($query);
-    $st->execute([$x, $y]);
+    $st->execute([$address, $buildingName, $x, $y]);
 
     $st = null;
     $pdo = null;
@@ -120,15 +120,17 @@ function addUserAddress($userID, $addressID, $detail, $type, $nickname){
 
 function getUserAddressList($userID){
     $pdo = pdoSqlConnect();
-    $query = "SELECT id AS userAddressID, address.x, address.y, `type`, ifnull(detail, 'no value') AS detailAddress, ifnull(nickname, 'no value') AS nickname, `status`
-    FROM user_address
-    INNER JOIN address ON user_address.addressID = address.addressID
-    WHERE userID = ?
-    ORDER BY (
-          CASE `type`
-          WHEN 'home' THEN 1
-          WHEN 'company' THEN 2
-          ELSE 3 END ), updatedAt DESC;";
+    $query = "SELECT id AS userAddressID, address.address, ifnull(address.buildingName, 'no value') AS buildingName, 
+    address.x, address.y, `type`, 
+    ifnull(detail, 'no value') AS detailAddress, ifnull(nickname, 'no value') AS nickname, `status`
+        FROM user_address
+        INNER JOIN address ON user_address.addressID = address.addressID
+        WHERE userID = ?
+        ORDER BY (
+              CASE `type`
+              WHEN 'home' THEN 1
+              WHEN 'company' THEN 2
+              ELSE 3 END ), updatedAt DESC;";
 
     $st = $pdo->prepare($query);
     $st->execute([$userID]);
@@ -176,10 +178,12 @@ function getUserIDByUserAddressID($userAddressID){
 
 function getUserAddress($userAddressID){
     $pdo = pdoSqlConnect();
-    $query = "SELECT id AS userAddressID, address.x, address.y, `type`, ifnull(detail, 'no value') AS detailAddress, ifnull(nickname, 'no value') AS nickname, `status`
-    FROM user_address
-    INNER JOIN address ON user_address.addressID = address.addressID
-    WHERE id = ?;";
+    $query = "SELECT id AS userAddressID, address.address, ifnull(address.buildingName, 'no value') AS buildingName, 
+    address.x, address.y, `type`, 
+    ifnull(detail, 'no value') AS detailAddress, ifnull(nickname, 'no value') AS nickname, `status`
+        FROM user_address
+        INNER JOIN address ON user_address.addressID = address.addressID
+        WHERE id = ?;";
 
     $st = $pdo->prepare($query);
     $st->execute([$userAddressID]);
@@ -254,6 +258,22 @@ function changeTypeToElse($userAddressID){
 
     $st = null;
     $pdo = null;
+}
+
+function isDeliveryAddressExist($userID){
+    $pdo = pdoSqlConnect();
+    $query = "SELECT EXISTS (SELECT * FROM user_address WHERE userID = ? AND `status` = 1) AS exist;";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$userID]);
+    
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res[0]['exist'];
 }
 
 

@@ -44,6 +44,7 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
     $r->addRoute('GET', '/address', ['AddressController', 'getUserAddressList']);
     $r->addRoute('PATCH', '/address', ['AddressController', 'setDeliveryAddress']);
     $r->addRoute('GET', '/address/verify', ['AddressController', 'checkUserAddressType']);
+    $r->addRoute('GET', '/address/verify/delivery', ['AddressController', 'checkUserAddressStatus']);
     $r->addRoute('GET', '/address/{userAddressID}', ['AddressController', 'getUserAddress']);
     $r->addRoute('PUT', '/address/{userAddressID}', ['AddressController', 'editUserAddress']);
     $r->addRoute('DELETE', '/address/{userAddressID}', ['AddressController', 'deleteUserAddress']);

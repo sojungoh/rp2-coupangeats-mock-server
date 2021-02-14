@@ -18,7 +18,7 @@ try {
                 $res->isSuccess = FALSE;
                 $res->code = 2009;
                 $res->message = "유효하지 않은 JWT 토큰입니다.";
-                echo json_encode($res, JSON_UNESCAPED_UNICODE);
+                echo json_encode($res, JSON_NUMERIC_CHECK);
                 break;
             }
 
@@ -28,18 +28,19 @@ try {
                 $res->isSuccess = FALSE;
                 $res->code = 2010;
                 $res->message = "존재하지 않는 사용자의 JWT 토큰입니다.";
-                echo json_encode($res, JSON_UNESCAPED_UNICODE);
+                echo json_encode($res, JSON_NUMERIC_CHECK);
                 break;
             }
 
-            if(empty($req->x) OR empty($req->y)){
+            if(empty($req->address) OR empty($req->x) OR empty($req->y)){
                 $res->isSuccess = FALSE;
                 $res->code = 2011;
                 $res->message = "필수 요청 파라미터를 모두 입력해주세요.";
-                echo json_encode($res, JSON_UNESCAPED_UNICODE);
+                echo json_encode($res, JSON_NUMERIC_CHECK);
                 break;
             }
             
+            $address = $req->address;
             $x = $req->x;
             $y = $req->y;
 
@@ -47,7 +48,7 @@ try {
                 $res->isSuccess = FALSE;
                 $res->code = 2012;
                 $res->message = "올바르지 않은 x좌표(경도값) 혹은 y좌표(위도값)이에요.";
-                echo json_encode($res, JSON_UNESCAPED_UNICODE);
+                echo json_encode($res, JSON_NUMERIC_CHECK);
                 break;
             }
 
@@ -60,44 +61,15 @@ try {
                 $res->isSuccess = FALSE;
                 $res->code = 2013;
                 $res->message = "올바른 type값을 입력해주세요.";
-                echo json_encode($res, JSON_UNESCAPED_UNICODE);
+                echo json_encode($res, JSON_NUMERIC_CHECK);
                 break;
             }
-            if(isAddressExist($x, $y)){
-                $addressID = getAddressID($x, $y);
 
-                if(empty($req->detailAddress)){
-                    $detail = null;
-                }else{
-                    $detail = $req->detailAddress;
-                }
-                if(empty($req->nickname)){
-                    $nickname = null;
-                }else{
-                    $nickname = $req->nickname;
-                }
-                if($type == 'home'){
-                    if(isHomeExist($userID)){
-                        changeTypeToElse(getHomeUserAddressID($userID));
-                    }
-                }
-                if($type == 'company'){
-                    if(isCompanyExist($userID)){
-                        changeTypeToElse(getCompanyUserAddressID($userID));
-                    }
-                }
-                addUserAddress($userID, $addressID, $detail, $type, $nickname);
-                $res->result = new stdClass();
-                $res->result->addressList = getUserAddressList($userID);
-                $res->isSuccess = TRUE;
-                $res->code = 1000;
-                $res->message = "배달 주소 추가 성공";
-                echo json_encode($res, JSON_UNESCAPED_UNICODE);
-                break;
+            if(empty($req->buildingName)){
+                $buildingName = null;
+            }else{
+                $buildingName = $req->buildingName;
             }
-            addAddress($x, $y);
-            $addressID = getAddressID($x, $y);
-            
             if(empty($req->detailAddress)){
                 $detail = null;
             }else{
@@ -118,6 +90,21 @@ try {
                     changeTypeToElse(getCompanyUserAddressID($userID));
                 }
             }
+            if(isAddressExist($x, $y)){
+                $addressID = getAddressID($x, $y);
+   
+                addUserAddress($userID, $addressID, $detail, $type, $nickname);
+                $res->result = new stdClass();
+                $res->result->addressList = getUserAddressList($userID);
+                $res->isSuccess = TRUE;
+                $res->code = 1000;
+                $res->message = "배달 주소 추가 성공";
+                echo json_encode($res, JSON_UNESCAPED_UNICODE);
+                break;
+            }
+            addAddress($address, $buildingName, $x, $y);
+            $addressID = getAddressID($x, $y);
+            
             addUserAddress($userID, $addressID, $detail, $type, $nickname);
             $res->result = new stdClass();
             $res->result->addressList = getUserAddressList($userID); 
@@ -287,7 +274,7 @@ try {
                 echo json_encode($res, JSON_UNESCAPED_UNICODE);
                 break;
             }
-            if(empty($req->x) OR empty($req->y) OR empty($req->type)){
+            if(empty($req->address) OR empty($req->x) OR empty($req->y) OR empty($req->type)){
                 $res->isSuccess = FALSE;
                 $res->code = 2011;
                 $res->message = "필수 요청 파라미터를 모두 입력해주세요.";
@@ -295,6 +282,7 @@ try {
                 break;
             }
 
+            $address = $req->address;
             $x = $req->x;
             $y = $req->y;
             $type = $req->type;
@@ -327,41 +315,12 @@ try {
                 echo json_encode($res, JSON_UNESCAPED_UNICODE);
                 break;
             }
-            if(isAddressExist($x, $y)){
-                $addressID = getAddressID($x, $y);
 
-                if(empty($req->detailAddress)){
-                    $detail = null;
-                }else{
-                    $detail = $req->detailAddress;
-                }
-                if(empty($req->nickname)){
-                    $nickname = null;
-                }else{
-                    $nickname = $req->nickname;
-                }
-                if($type == 'home'){
-                    if(isHomeExist($userID)){
-                        changeTypeToElse(getHomeUserAddressID($userID));
-                    }
-                }
-                if($type == 'company'){
-                    if(isCompanyExist($userID)){
-                        changeTypeToElse(getCompanyUserAddressID($userID));
-                    }
-                }
-                editUserAddress($addressID, $detail, $type, $nickname, $userAddressID);
-                $res->result = new stdClass();
-                $res->result->addressList = getUserAddressList($userID);
-                $res->isSuccess = TRUE;
-                $res->code = 1000;
-                $res->message = "배달지 상세 정보 수정 성공";
-                echo json_encode($res, JSON_UNESCAPED_UNICODE);
-                break;
+            if(empty($req->buildingName)){
+                $buildingName = null;
+            }else{
+                $buildingName = $req->buildingName;
             }
-            addAddress($x, $y);
-            $addressID = getAddressID($x, $y);
-            
             if(empty($req->detailAddress)){
                 $detail = null;
             }else{
@@ -382,6 +341,22 @@ try {
                     changeTypeToElse(getCompanyUserAddressID($userID));
                 }
             }
+
+            if(isAddressExist($x, $y)){
+                $addressID = getAddressID($x, $y);
+
+                editUserAddress($addressID, $detail, $type, $nickname, $userAddressID);
+                $res->result = new stdClass();
+                $res->result->addressList = getUserAddressList($userID);
+                $res->isSuccess = TRUE;
+                $res->code = 1000;
+                $res->message = "배달지 상세 정보 수정 성공";
+                echo json_encode($res, JSON_UNESCAPED_UNICODE);
+                break;
+            }
+            addAddress($address, $buildingName, $x, $y);
+            $addressID = getAddressID($x, $y);
+            
             editUserAddress($addressID, $detail, $type, $nickname, $userAddressID);
             $res->result = new stdClass();
             $res->result->addressList = getUserAddressList($userID);
@@ -487,7 +462,44 @@ try {
             $res->code = 1000;
             $res->message = "기존 등록된 {$type} 주소가 없습니다.";
             echo json_encode($res, JSON_UNESCAPED_UNICODE);
-            break;            
+            break;
+
+        case "checkUserAddressStatus":
+            http_response_code(200);
+
+            $jwt = $_SERVER["HTTP_X_ACCESS_TOKEN"];
+            
+            if(!isValidJWT($jwt, JWT_SECRET_KEY)){
+                $res->isSuccess = FALSE;
+                $res->code = 2009;
+                $res->message = "유효하지 않은 JWT 토큰입니다.";
+                echo json_encode($res, JSON_UNESCAPED_UNICODE);
+                break;
+            }
+
+            $userID = getDataByJWToken($jwt, JWT_SECRET_KEY)->userID;
+
+            if(!isUserIDExist($userID)){
+                $res->isSuccess = FALSE;
+                $res->code = 2010;
+                $res->message = "존재하지 않는 사용자의 JWT 토큰입니다.";
+                echo json_encode($res, JSON_UNESCAPED_UNICODE);
+                break;
+            }
+
+            if(!isDeliveryAddressExist($userID)){
+                $res->isSuccess = FALSE;
+                $res->code = 3000;
+                $res->message = "설정된 배달지 주소가 없습니다.";
+                echo json_encode($res, JSON_UNESCAPED_UNICODE);
+                break;
+            }
+
+            $res->isSuccess = TRUE;
+            $res->code = 1000;
+            $res->message = "설정된 배달지 주소가 있습니다.";
+            echo json_encode($res, JSON_UNESCAPED_UNICODE);
+            break;
             
     }
 } catch (\Exception $e) {
