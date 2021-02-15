@@ -99,7 +99,7 @@ try {
         /*
          * API No. 5
          * API Name : 음식점 메뉴 조회 API
-         * 마지막 수정 날짜 : 21.02.10
+         * 마지막 수정 날짜 : 21.02.15
          */
         case "getMenu":
             http_response_code(200);

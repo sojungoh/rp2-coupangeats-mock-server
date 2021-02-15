@@ -110,7 +110,39 @@ function isValidRestaurantID($restaurantID): int
 function getMenu($restaurantID): array
 {
     $pdo = pdoSqlConnect();
-    $query = "";
+    $query = "SELECT     r.id as restaurantID, r.title as restaurant,
+                         mc.category as menuCategory,
+                         m.menuID as menuID, m.menuName as name,
+                         CONCAT(FORMAT(menuPrice, 0), '원') as price,
+                         IFNULL(m.menuIntroduction, '메뉴소개 없음') as menuIntro,
+                         CASE (SELECT EXISTS(SELECT COUNT(imageURL)
+                                             FROM   menu_image mi
+                                             WHERE  mi.menuID = m.menuID
+                                             GROUP BY mi.menuID
+                                             LIMIT 1))
+                         WHEN 0 THEN '이미지 없음'
+                         ELSE
+                                 (CASE (SELECT COUNT(imageURL)
+                                        FROM   menu_image mi
+                                        WHERE  mi.menuID = m.menuID
+                                        GROUP BY mi.menuID
+                                        LIMIT 1)
+                                 WHEN 1 THEN (SELECT mi2.imageURL
+                                              FROM   menu_image mi2
+                                              WHERE  mi2.imageOrder = 1
+                                              AND    mi2.menuID = m.menuID
+                                              LIMIT 1)
+                                 ELSE (SELECT mi3.imageURL
+                                       FROM menu_image mi3
+                                       WHERE mi3.menuID = m.menuID
+                                       LIMIT 1)
+                                 END)
+                         END as imageURL
+             FROM       menu_category mc
+             INNER JOIN menu m on m.menuID = mc.menuID
+             INNER JOIN restaurant r on m.restaurantID = r.id
+             WHERE      r.id =?
+             ORDER BY   mc.categoryOrder, m.menuID;";
 
     $st = $pdo->prepare($query);
     $st->execute([$restaurantID]);
