@@ -22,14 +22,6 @@ try {
                 break;
             }
 
-            if(getRestaurantCoupon($restaurantID) == null){
-                $res->isSuccess = FALSE;
-                $res->code = 3004;
-                $res->message = "음식점에서 발급한 쿠폰이 없습니다.";
-                echo json_encode($res, JSON_NUMERIC_CHECK);
-                break;
-            }
-
             $res->couponInfo = getRestaurantCoupon($restaurantID);
             $res->isSuccess = TRUE;
             $res->code = 1000;
@@ -83,7 +75,7 @@ try {
 
             if(isCouponAlreadyExist($restaurantID, $couponCode)){
                 $res->isSuccess = FALSE;
-                $res->code = 3005;
+                $res->code = 3004;
                 $res->message = "이미 발급 받으신 쿠폰입니다.";
                 echo json_encode($res, JSON_NUMERIC_CHECK);
                 break;
@@ -95,8 +87,129 @@ try {
             $res->message = "쿠폰 받기 완료";
             echo json_encode($res, JSON_NUMERIC_CHECK);
             break;
+
+        case "getUserCoupon":
+            http_response_code(200);
             
-    
+            $jwt = $_SERVER['HTTP_X_ACCESS_TOKEN'];
+
+            if(!isValidJWT($jwt, JWT_SECRET_KEY)){
+                $res->isSuccess = FALSE;
+                $res->code = 2009;
+                $res->message = "유효하지 않은 JWT 토큰입니다.";
+                echo json_encode($res, JSON_UNESCAPED_UNICODE);
+                break;
+            }
+
+            $userID = getDataByJWToken($jwt, JWT_SECRET_KEY)->userID;
+
+            if(!isUserIDExist($userID)){
+                $res->isSuccess = FALSE;
+                $res->code = 2010;
+                $res->message = "존재하지 않는 사용자의 JWT 토큰입니다.";
+                echo json_encode($res, JSON_UNESCAPED_UNICODE);
+                break;
+            }
+
+            checkExpiredCoupon();
+            $res->result = new stdClass();
+            $res->result->couponList = getUserCoupon($userID);
+            $res->isSuccess = TRUE;
+            $res->code = 1000;
+            $res->message = "할인 쿠폰 조회 성공";
+            echo json_encode($res, JSON_NUMERIC_CHECK);
+            break;
+
+        case "verifyUserCoupon":
+            http_response_code(200);
+            
+            $jwt = $_SERVER['HTTP_X_ACCESS_TOKEN'];
+
+            if(!isValidJWT($jwt, JWT_SECRET_KEY)){
+                $res->isSuccess = FALSE;
+                $res->code = 2009;
+                $res->message = "유효하지 않은 JWT 토큰입니다.";
+                echo json_encode($res, JSON_UNESCAPED_UNICODE);
+                break;
+            }
+
+            $userID = getDataByJWToken($jwt, JWT_SECRET_KEY)->userID;
+
+            if(!isUserIDExist($userID)){
+                $res->isSuccess = FALSE;
+                $res->code = 2010;
+                $res->message = "존재하지 않는 사용자의 JWT 토큰입니다.";
+                echo json_encode($res, JSON_UNESCAPED_UNICODE);
+                break;
+            }
+
+            $couponCode = $_GET['coupon-code'];
+
+            if(!isCouponCodeValid($couponCode)){
+                $res->isSuccess = FALSE;
+                $res->code = 2016;
+                $res->message = "잘못된 쿠폰번호 입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+
+            $restaurantID = getRestaurantIDByCode($couponCode);
+            checkExpiredCoupon();
+
+            if(isCouponAlreadyExist($restaurantID, $couponCode)){
+                $res->isSuccess = FALSE;
+                $res->code = 3004;
+                $res->message = "이미 발급 받으신 쿠폰입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+
+            $res->isSuccess = TRUE;
+            $res->code = 1000;
+            $res->message = "쿠폰번호: {$couponCode}는 발급받지 않은 쿠폰입니다.";
+            echo json_encode($res, JSON_NUMERIC_CHECK);
+            break;
+
+        case "getAvailableCoupon":
+            http_response_code(200);
+
+            $jwt = $_SERVER['HTTP_X_ACCESS_TOKEN'];
+
+            if(!isValidJWT($jwt, JWT_SECRET_KEY)){
+                $res->isSuccess = FALSE;
+                $res->code = 2009;
+                $res->message = "유효하지 않은 JWT 토큰입니다.";
+                echo json_encode($res, JSON_UNESCAPED_UNICODE);
+                break;
+            }
+
+            $userID = getDataByJWToken($jwt, JWT_SECRET_KEY)->userID;
+
+            if(!isUserIDExist($userID)){
+                $res->isSuccess = FALSE;
+                $res->code = 2010;
+                $res->message = "존재하지 않는 사용자의 JWT 토큰입니다.";
+                echo json_encode($res, JSON_UNESCAPED_UNICODE);
+                break;
+            }
+
+            $restaurantID = $_GET['restaurant-id'];
+
+            if(!isRestaurantExist($restaurantID)){
+                $res->isSuccess = FALSE;
+                $res->code = 2008;
+                $res->message = "존재하지 않는 restaurantID 입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+
+            $res->result = new stdClass();
+            $res->result->couponList = getAvailableCoupon($userID, $restaurantID);
+            $res->isSuccess = TRUE;
+            $res->message = "카트 쿠폰 조회 성공";
+            echo json_encode($res, JSON_NUMERIC_CHECK);
+            break;
+        
     }
 } catch (\Exception $e) {
     return getSQLErrorException($errorLogs, $e, $req);

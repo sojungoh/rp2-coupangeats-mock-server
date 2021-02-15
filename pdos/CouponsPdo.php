@@ -68,7 +68,7 @@ function getRestaurantIDByCode($couponCode){
 function isCouponAlreadyExist($restaurantID, $couponCode){
     $pdo = pdoSqlConnect();
     $query = "SELECT EXISTS (SELECT * FROM user_coupon 
-    WHERE restaurantID = ? AND `code` = ? AND `status` = 'applied') AS exist;";
+    WHERE restaurantID = ? AND `code` = ? AND `status` != 'expired') AS exist;";
 
     $st = $pdo->prepare($query);
     $st->execute([$restaurantID, $couponCode]);
@@ -95,14 +95,54 @@ function issueCoupon($userID, $restaurantID, $couponCode){
 
 function checkExpiredCoupon(){
     $pdo = pdoSqlConnect();
-    $query = "UPDATE user_coupon A 
-    INNER JOIN coupon B 
-    SET A.`status` = 'expired'
-    WHERE B.endAt <= now();";
+    $query = "UPDATE user_coupon 
+    INNER JOIN coupon ON user_coupon.`code` = coupon.`code` 
+    SET user_coupon.`status` = 'expired'
+    WHERE now() >= coupon.endAt;";
 
     $st = $pdo->prepare($query);
     $st->execute();
 
     $st = null;
     $pdo = null;
+}
+
+function getUserCoupon($userID){
+    $pdo = pdoSqlConnect();
+    $query = "SELECT user_coupon.`code`, coupon.restaurantID, `name`, discountPrice, 
+    ifnull(minOrderPrice, 'no value') AS minOrderPrice, endAt, `status`
+    FROM coupon
+    INNER JOIN user_coupon ON user_coupon.`code` = coupon.`code`
+    WHERE userID = ? AND `status` != 'used';";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$userID]);
+    
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res;
+}
+
+function getAvailableCoupon($userID, $restaurantID){
+    $pdo = pdoSqlConnect();
+    $query = "SELECT coupon.`code`, coupon.restaurantID, discountPrice, 
+    ifnull(minOrderPrice, 'no value') AS minOrderPrice
+    FROM user_coupon
+    INNER JOIN coupon ON user_coupon.`code` = coupon.`code`
+    WHERE userID = ? AND user_coupon.restaurantID = ?;";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$userID, $restaurantID]);
+    
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res;
 }
