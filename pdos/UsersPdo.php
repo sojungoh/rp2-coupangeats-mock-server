@@ -2,7 +2,7 @@
 
 function getUserDetail($userID){
     $pdo = pdoSqlConnect();
-    $query = "select * from `user` where id = ?;";
+    $query = "SELECT id AS userID, `name`, phoneNumber FROM `user` WHERE id = ?;";
 
     $st = $pdo->prepare($query);
     $st->execute([$userID]);

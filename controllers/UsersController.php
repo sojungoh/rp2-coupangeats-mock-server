@@ -30,12 +30,20 @@ try {
         case "getUserDetail":
             http_response_code(200);
 
-            $userID = $vars["userID"];
+            $jwt = $_SERVER['HTTP_X_ACCESS_TOKEN'];
+            $userID = getDataByJWToken($jwt, JWT_SECRET_KEY)->userID;
 
+            if(!isValidJWT($jwt, JWT_SECRET_KEY)){
+                $res->isSuccess = FALSE;
+                $res->code = 2009;
+                $res->message = "유효하지 않은 JWT 토큰입니다.";
+                echo json_encode($res, JSON_UNESCAPED_UNICODE);
+                break;
+            }
             if(!isUserIDExist($userID)){
                 $res->isSuccess = FALSE;
-                $res->code = 3000;
-                $res->message ="userID를 가져올 수 없습니다.";
+                $res->code = 2010;
+                $res->message = "존재하지 않는 사용자의 JWT 토큰입니다.";
                 echo json_encode($res, JSON_UNESCAPED_UNICODE);
                 break;
             }
