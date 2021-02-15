@@ -140,10 +140,28 @@ try {
             $restaurantID = $vars['restaurantID'];
             $userID = $vars['userID'];
 
-            $res->result = favorite($restaurantID, $userID);
+            favorite($restaurantID, $userID);
             $res->isSuccess = TRUE;
             $res->code = 1000;
             $res->message = "즐겨찾기 등록 성공";
+            echo json_encode($res, JSON_NUMERIC_CHECK);
+            break;
+
+        /*
+         * API No. 7
+         * API Name : 음식점 즐겨찾기 해제 API
+         * 마지막 수정 날짜 : 21.02.16
+         */
+        case "deleteFavorite":
+            http_response_code(200);
+
+            $restaurantID = $vars['restaurantID'];
+            $userID = $vars['userID'];
+
+            deleteFavorite($restaurantID, $userID);
+            $res->isSuccess = TRUE;
+            $res->code = 1000;
+            $res->message = "즐겨찾기 해제 성공";
             echo json_encode($res, JSON_NUMERIC_CHECK);
             break;
 

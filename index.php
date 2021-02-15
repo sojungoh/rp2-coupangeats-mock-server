@@ -42,7 +42,8 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
     $r->addRoute('GET', '/basic-info/{restaurantID}', ['RestaurantController', 'basicInfo']);
     $r->addRoute('GET', '/restaurants/{restaurantID}/menu', ['RestaurantController', 'getMenu']);
 
-    $r->addRoute('POST', '/favorites/:restaurantID/:userID', ['RestaurantController', 'favorite']);
+    $r->addRoute('POST', '/favorites/{restaurantID}/{userID}', ['RestaurantController', 'favorite']);
+    $r->addRoute('PATCH', '/favorites/{restaurantID}/{userID}', ['RestaurantController', 'deleteFavorite']);
 
     /* ******************   Address   ****************** */
     $r->addRoute('POST', '/address', ['AddressController', 'addUserAddress']);
