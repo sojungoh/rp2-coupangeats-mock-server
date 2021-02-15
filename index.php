@@ -39,7 +39,7 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
     $r->addRoute('GET', '/categories', ['RestaurantController', 'categories']);
     $r->addRoute('GET', '/filters', ['RestaurantController', 'filters']);
     $r->addRoute('GET', '/restaurants', ['RestaurantController', 'filterSearch']);
-    $r->addRoute('GET', '/basic-info/{restaurantID}', ['RestaurantController', 'basicInfo']);
+    $r->addRoute('GET', '/basic-info/{restauraㅎntID}', ['RestaurantController', 'basicInfo']);
     $r->addRoute('GET', '/restaurants/{restaurantID}/menu', ['RestaurantController', 'getMenu']);
 
 
