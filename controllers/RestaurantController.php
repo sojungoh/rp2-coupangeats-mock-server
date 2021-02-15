@@ -106,10 +106,44 @@ try {
 
             $restaurantID = $vars['restaurantID'];
 
+            if(!isValidRestaurantID($restaurantID)) {
+                $res->isSuccess = FALSE;
+                $res->code = 2008;
+                $res->message = "유효하지 않은 restaurantID입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+
+            if(!isMenuRegistered($restaurantID)) {
+                $res->isSuccess = FALSE;
+                $res->code = 3005;
+                $res->message = "메뉴가 등록되지 않은 음식점입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+
             $res->result = getMenu($restaurantID);
             $res->isSuccess = TRUE;
             $res->code = 1000;
             $res->message = "음식점 메뉴 조회 성공";
+            echo json_encode($res, JSON_NUMERIC_CHECK);
+            break;
+
+        /*
+         * API No. 6
+         * API Name : 음식점 즐겨찾기 등록 API
+         * 마지막 수정 날짜 : 21.02.16
+         */
+        case "favorite":
+            http_response_code(200);
+
+            $restaurantID = $vars['restaurantID'];
+            $userID = $vars['userID'];
+
+            $res->result = favorite($restaurantID, $userID);
+            $res->isSuccess = TRUE;
+            $res->code = 1000;
+            $res->message = "즐겨찾기 등록 성공";
             echo json_encode($res, JSON_NUMERIC_CHECK);
             break;
 

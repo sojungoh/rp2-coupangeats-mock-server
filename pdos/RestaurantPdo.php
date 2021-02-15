@@ -154,3 +154,35 @@ function getMenu($restaurantID): array
 
     return $res;
 }
+
+function isMenuRegistered($restaurantID): int
+{
+    $pdo = pdoSqlConnect();
+    $query = "SELECT EXISTS(SELECT     restaurantID 
+                            FROM       menu 
+                            INNER JOIN restaurant r on menu.restaurantID = r.id 
+                            WHERE r.id =?) as exist;";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$restaurantID]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return intval($res[0]['exist']);
+}
+
+//No.6
+function favorite($restaurantID, $userID)
+{
+    $pdo = pdoSqlConnect();
+    $query = "";
+    $st = $pdo->prepare($query);
+    $st->execute([$restaurantID, $userID]);
+
+    $st = null;
+    $pdo = null;
+
+}
