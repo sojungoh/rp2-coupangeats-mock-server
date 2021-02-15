@@ -178,11 +178,22 @@ function isMenuRegistered($restaurantID): int
 function favorite($restaurantID, $userID)
 {
     $pdo = pdoSqlConnect();
-    $query = "";
+    $query = "INSERT INTO favorite(restaurantID, userID) VALUES(?,?);";
     $st = $pdo->prepare($query);
     $st->execute([$restaurantID, $userID]);
 
     $st = null;
     $pdo = null;
+}
 
+//No.7
+function deleteFavorite($restaurantID, $userID)
+{
+    $pdo = pdoSqlConnect();
+    $query = "UPDATE favorite SET isFavorite = 0 WHERE restaurantID = ? AND userID = ?;";
+    $st = $pdo->prepare($query);
+    $st->execute([$restaurantID, $userID]);
+
+    $st = null;
+    $pdo = null;
 }
