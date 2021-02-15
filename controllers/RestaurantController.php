@@ -116,7 +116,7 @@ try {
 
             if(!isMenuRegistered($restaurantID)) {
                 $res->isSuccess = FALSE;
-                $res->code = 2017;
+                $res->code = 3005;
                 $res->message = "메뉴가 등록되지 않은 음식점입니다.";
                 echo json_encode($res, JSON_NUMERIC_CHECK);
                 break;
