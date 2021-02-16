@@ -60,6 +60,9 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
     /* ******************   Coupons   ****************** */
     $r->addRoute('GET', '/coupons', ['CouponsController', 'getRestaurantCoupon']);
     $r->addRoute('POST', '/coupons', ['CouponsController', 'issueCoupon']);
+    $r->addRoute('GET', '/coupons/user', ['CouponsController', 'getUserCoupon']);
+    $r->addRoute('GET', '/coupons/user/verify', ['CouponsController', 'verifyUserCoupon']);
+    $r->addRoute('GET', '/coupons/cart', ['CouponsController', 'getAvailableCoupon']);
 
     /* ******************   JWT   ****************** */
     
