@@ -170,19 +170,52 @@ try {
             }
 
         /*
-         * API No. 8
-         * API Name : 메뉴 상세조회 및 옵션 선택 API
-         * 마지막 수정 날짜 : 21.02.16
+         * API No. 7
+         * API Name : 메뉴 상세조회 API
+         * 마지막 수정 날짜 : 21.02.17
          */
         case "menuDetail":
             http_response_code(200);
 
             $menuID = $vars['menuID'];
 
+            if(!isValidMenuID($menuID)) {
+                $res->isSuccess = TRUE;
+                $res->code = 2017;
+                $res->message = "유효하지 않은 menuID입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+
             $res->result = menuDetail($menuID);
             $res->isSuccess = TRUE;
             $res->code = 1000;
             $res->message = "메뉴 상세 조회 성공";
+            echo json_encode($res, JSON_NUMERIC_CHECK);
+            break;
+
+        /*
+         * API No. 8
+         * API Name : 메뉴 옵션 조회 API
+         * 마지막 수정 날짜 : 21.02.17
+         */
+        case "menuOptions":
+            http_response_code(200);
+
+            $menuID = $vars['menuID'];
+
+            if(!isValidMenuID($menuID)) {
+                $res->isSuccess = TRUE;
+                $res->code = 2017;
+                $res->message = "유효하지 않은 menuID입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+
+            $res->result = menuOptions($menuID);
+            $res->isSuccess = TRUE;
+            $res->code = 1000;
+            $res->message = "메뉴 옵션 조회 성공";
             echo json_encode($res, JSON_NUMERIC_CHECK);
             break;
     }
