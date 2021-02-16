@@ -205,9 +205,17 @@ try {
             $menuID = $vars['menuID'];
 
             if(!isValidMenuID($menuID)) {
-                $res->isSuccess = TRUE;
+                $res->isSuccess = FALSE;
                 $res->code = 2017;
                 $res->message = "유효하지 않은 menuID입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+
+            if(isNotExistOptions($menuID)) {
+                $res->isSuccess = FALSE;
+                $res->code = 3006;
+                $res->message = "옵션이 없는 메뉴입니다.";
                 echo json_encode($res, JSON_NUMERIC_CHECK);
                 break;
             }
@@ -217,6 +225,31 @@ try {
             $res->code = 1000;
             $res->message = "메뉴 옵션 조회 성공";
             echo json_encode($res, JSON_NUMERIC_CHECK);
+            break;
+
+        /*
+         * API No. 9
+         * API Name : 매장/원산지정보 조회 API
+         * 마지막 수정 날짜 : 21.02.18
+         */
+        case "restaurantDetail":
+            http_response_code(200);
+
+            $restaurantID = $vars['restaurantID'];
+
+            if(!isValidRestaurantID($restaurantID)) {
+                $res->isSuccess = FALSE;
+                $res->code = 2008;
+                $res->message = "유효하지 않은 restaurantID입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+
+            $res->result = restaurantDetail($restaurantID);
+            $res->isSuccess = TRUE;
+            $res->code = 1000;
+            $res->message = "매장/원산지조회 성공";
+            echo json_encode($res, JSON_UNESCAPED_UNICODE);
             break;
     }
 } catch (\Exception $e) {

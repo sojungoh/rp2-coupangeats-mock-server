@@ -361,3 +361,66 @@ function menuOptions($menuID)
 
     return $res;
 }
+
+function isNotExistOptions($menuID)
+{
+    $pdo = pdoSqlConnect();
+    $query = "SELECT ISNULL(menu.menuOptionID) as isNotExistOptions FROM menu WHERE menuID = ?;";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$menuID]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return intval($res[0]['isNotExistOptions']);
+}
+
+//No.9
+function restaurantDetail($restaurantID)
+{
+    $pdo = pdoSqlConnect();
+    $query = "SELECT r.id as restaurantID, r.title AS restaurant, r.phoneNumber,
+                     CONCAT_WS(' ', a.address, (CASE ISNULL(a.buildingName)
+                                                WHEN 1 THEN ''
+                                                ELSE a.buildingName
+                                                END),
+                                    r.addressDetail) AS address,
+                     CONCAT_WS(',', CONCAT('(', a.x), CONCAT(a.y, ')')) AS point,
+                                    r.ownerName, r.ownerNumber, r.name, r.introduction,
+                     CASE ISNULL(oh.breakAt)
+                     WHEN 1 THEN CONCAT_WS(': ', CONCAT_WS(' ~ ', oh.day, oh.until),
+                                 CONCAT_WS(' ~ ', DATE_FORMAT(oh.openAt, '%H:%i'), DATE_FORMAT(oh.closeAt, '%H:%i')))
+                     ELSE CONCAT_WS(', ', (CONCAT_WS(': ', CONCAT_WS(' ~ ', oh.day, oh.until),
+                          CONCAT_WS(' ~ ', DATE_FORMAT(oh.openAt, '%H:%i'), DATE_FORMAT(oh.breakAt, '%H:%i')))),
+                          CONCAT_WS(' ~ ', DATE_FORMAT(oh.breakEndedAt, '%H:%i'), DATE_FORMAT(oh.closeAt, '%H:%i')))
+                     END AS openingHour,
+                     CASE (ISNULL(r.notice))
+                     WHEN 1 THEN '공지사항 없음'
+                     ELSE r.notice
+                     END AS notice,
+                     CASE (ISNULL(r.originInfo))
+                     WHEN 1 THEN '원산지정보 없음'
+                     ELSE r.originInfo
+                     END AS originInfo,
+                     CASE (ISNULL(r.allergenInfo))
+                     WHEN 1 THEN '알레르기정보 없음'
+                     ELSE r.allergenInfo
+                     END AS allergenInfo
+             FROM restaurant AS r
+             INNER JOIN address a on r.addressID = a.addressID
+             LEFT JOIN opening_hour oh ON r.id = oh.restaurantID
+             WHERE r.id = ?;";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$restaurantID]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res;
+}
