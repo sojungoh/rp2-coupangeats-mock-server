@@ -131,8 +131,8 @@ try {
 
         /*
          * API No. 6
-         * API Name : 음식점 즐겨찾기 등록 API
-         * 마지막 수정 날짜 : 21.02.16
+         * API Name : 음식점 즐겨찾기 등록 및 해제 API
+         * 마지막 수정 날짜 : 21.02.17
          */
         case "favorite":
             http_response_code(200);
@@ -140,31 +140,51 @@ try {
             $restaurantID = $vars['restaurantID'];
             $userID = $vars['userID'];
 
-            favorite($restaurantID, $userID);
-            $res->isSuccess = TRUE;
-            $res->code = 1000;
-            $res->message = "즐겨찾기 등록 성공";
-            echo json_encode($res, JSON_NUMERIC_CHECK);
-            break;
+            if(!isRegisteredFavorite($restaurantID, $userID)) { //이 유저가 이 음식점에 등록한 적이 있나? 있으면 1 없으면 0
+                                                                //처음 등록이야! isRegisteredFavorite 값이 0인 경우!
+                favorite($restaurantID, $userID);
+                $res->isSuccess = TRUE;
+                $res->code = 1000;
+                $res->message = "즐겨찾기 등록 성공";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+
+            else { //등록한 적 있네 있어.
+                if(isAlreadyFavorite($restaurantID, $userID)) { //등록한 적 있는데, 그게 지금 즐겨찾기 상태(1)인 경우, 해제해줘야 해.
+                    deleteFavorite($restaurantID, $userID);
+                    $res->isSuccess = TRUE;
+                    $res->code = 1000;
+                    $res->message = "즐겨찾기 해제 성공";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    break;
+                }
+                else { //등록한 적 있는데, 그게 지금 해제 상태(0)인 경우, 다시 등록해줘야 해.
+                    reFavorite($restaurantID, $userID);
+                    $res->isSuccess = TRUE;
+                    $res->code = 1000;
+                    $res->message = "즐겨찾기 등록 성공";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    break;
+                }
+            }
 
         /*
-         * API No. 7
-         * API Name : 음식점 즐겨찾기 해제 API
+         * API No. 8
+         * API Name : 메뉴 상세조회 및 옵션 선택 API
          * 마지막 수정 날짜 : 21.02.16
          */
-        case "deleteFavorite":
+        case "menuDetail":
             http_response_code(200);
 
-            $restaurantID = $vars['restaurantID'];
-            $userID = $vars['userID'];
+            $menuID = $vars['menuID'];
 
-            deleteFavorite($restaurantID, $userID);
+            $res->result = menuDetail($menuID);
             $res->isSuccess = TRUE;
             $res->code = 1000;
-            $res->message = "즐겨찾기 해제 성공";
+            $res->message = "메뉴 상세 조회 성공";
             echo json_encode($res, JSON_NUMERIC_CHECK);
             break;
-
     }
 } catch (\Exception $e) {
     return getSQLErrorException($errorLogs, $e, $req);

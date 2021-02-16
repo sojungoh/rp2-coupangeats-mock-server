@@ -62,7 +62,7 @@ function basicInfo($restaurantID): array
 {
     $pdo = pdoSqlConnect();
     $query = "SELECT restaurant.id as id, restaurant.title, FORMAT(count(review.restaurantID), 0) as 'reviews',
-                     ROUND(avg(review.starRating), 1) as 'star',
+                     IFNULL(ROUND(avg(review.starRating), 1), 0) as 'star',
                      IF(FORMAT(restaurant.deliveryFee, 0) = 0, '무료배달', FORMAT(restaurant.deliveryFee, 0))as deliveryFee,
                      FORMAT(restaurant.minimumOrder, 0) as minimumOrder, restaurant.isCheetah,
                      (SELECT imageURL
@@ -75,7 +75,7 @@ function basicInfo($restaurantID): array
                       FROM restaurant_image
                       WHERE imageOrder = 3 AND restaurantID = restaurant.id) imageURL3
               FROM   restaurant
-              INNER JOIN review on review.restaurantID = restaurant.id
+              LEFT JOIN review on review.restaurantID = restaurant.id
               WHERE restaurant.id =?
               GROUP BY review.restaurantID;";
 
@@ -139,8 +139,8 @@ function getMenu($restaurantID): array
                                  END)
                          END as imageURL
              FROM       menu_category mc
-             INNER JOIN menu m on m.menuID = mc.menuID
-             INNER JOIN restaurant r on m.restaurantID = r.id
+             LEFT JOIN menu m on m.menuID = mc.menuID
+             LEFT JOIN restaurant r on m.restaurantID = r.id
              WHERE      r.id =?
              ORDER BY   mc.categoryOrder, m.menuID;";
 
@@ -186,7 +186,6 @@ function favorite($restaurantID, $userID)
     $pdo = null;
 }
 
-//No.7
 function deleteFavorite($restaurantID, $userID)
 {
     $pdo = pdoSqlConnect();
@@ -196,4 +195,71 @@ function deleteFavorite($restaurantID, $userID)
 
     $st = null;
     $pdo = null;
+}
+
+function reFavorite($restaurantID, $userID)
+{
+    $pdo = pdoSqlConnect();
+    $query = "UPDATE favorite SET isFavorite = 1 WHERE restaurantID = ? AND userID = ?;";
+    $st = $pdo->prepare($query);
+    $st->execute([$restaurantID, $userID]);
+
+    $st = null;
+    $pdo = null;
+}
+
+function isRegisteredFavorite($restaurantID, $userID)
+{
+    $pdo = pdoSqlConnect();
+    $query = "SELECT EXISTS(SELECT *
+                            FROM favorite
+                            WHERE restaurantID = ?
+                            AND userID = ?) AS exist;";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$restaurantID, $userID]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return intval($res[0]['exist']);
+}
+
+function isAlreadyFavorite($restaurantID, $userID)
+{
+    $pdo = pdoSqlConnect();
+    $query = "SELECT EXISTS (SELECT *
+                             FROM favorite
+                             WHERE restaurantID = ?
+                             AND userID = ?
+                             AND isFavorite = 1) AS exist;";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$restaurantID, $userID]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return intval($res[0]['exist']);
+}
+
+//No.8
+function menuDetail($menuID): array
+{
+    $pdo = pdoSqlConnect();
+    $query = "";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$menuID]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res;
 }
