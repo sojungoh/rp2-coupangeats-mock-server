@@ -340,11 +340,14 @@ function isValidMenuID($menuID)
 function menuOptions($menuID)
 {
     $pdo = pdoSqlConnect();
-    $query = "SELECT     menuID, menuName, optionOrder, optionTitle, isEssential, multipleChoice, subOrder, subName, subPrice
+    $query = "SELECT     r.id as restaurantID, r.title as restaurant,
+                         menuID, menuName, optionOrder, optionTitle, isEssential, multipleChoice, subOrder, subName,
+                         CONCAT(FORMAT(subPrice, 0), '원') as subPrice
               FROM       menu as m
               LEFT JOIN  option_order oo on m.menuOptionID = oo.optionID
               INNER JOIN option_title ot on oo.optionTitleID = ot.optionTitleID
               INNER JOIN sub_option so on ot.optionTitleID = so.optionTitleID
+              INNER JOIN restaurant r on r.id = m.restaurantID  
               WHERE      m.menuID = ?
               ORDER BY   optionOrder, subOrder;";
 
