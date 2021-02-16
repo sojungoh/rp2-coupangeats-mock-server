@@ -127,7 +127,7 @@ function getMenu($restaurantID): array
                                         WHERE  mi.menuID = m.menuID
                                         GROUP BY mi.menuID
                                         LIMIT 1)
-                                 WHEN 1 THEN (SELECT mi2.imageURL
+                                 WHEN 2 THEN (SELECT mi2.imageURL
                                               FROM   menu_image mi2
                                               WHERE  mi2.imageOrder = 1
                                               AND    mi2.menuID = m.menuID
@@ -247,11 +247,106 @@ function isAlreadyFavorite($restaurantID, $userID)
     return intval($res[0]['exist']);
 }
 
-//No.8
+//No.7
 function menuDetail($menuID): array
 {
     $pdo = pdoSqlConnect();
-    $query = "";
+    $query = "SELECT m.restaurantID, r.title, m.menuID, menuName,
+                     IFNULL(menuIntroduction, '메뉴소개 없음') AS menuIntro,
+                     CONCAT(FORMAT(menuPrice, 0), '원') AS menuPrice,
+                     CASE (SELECT EXISTS(SELECT COUNT(mi2.imageURL)
+                                         FROM menu_image mi2
+                                         WHERE mi2.menuID = m.menuID
+                                         GROUP BY mi2.menuID
+                                         LIMIT 1))
+                     WHEN 0 THEN '1번 이미지 없음'
+                     ELSE
+                          (CASE (SELECT COUNT(imageURL)
+                                 FROM   menu_image mi
+                                 WHERE  mi.menuID = m.menuID
+                                 GROUP BY mi.menuID
+                                 LIMIT 1)
+                          WHEN 1 THEN (SELECT imageURL
+                                       FROM menu_image
+                                       WHERE m.menuID = menu_image.menuID)
+                          WHEN 2 THEN (SELECT mi2.imageURL
+                                       FROM   menu_image mi2
+                                       WHERE  mi2.imageOrder = 1
+                                       AND    mi2.menuID = m.menuID
+                                       LIMIT 1)
+                          END)
+                     END AS imageURL1,
+                     CASE (SELECT EXISTS(SELECT COUNT(mi2.imageURL)
+                                         FROM menu_image mi2
+                                         WHERE mi2.menuID = m.menuID
+                                         GROUP BY mi2.menuID
+                                         LIMIT 1))
+                     WHEN 0 THEN '2번 이미지 없음'
+                     ELSE
+                         (CASE (SELECT COUNT(imageURL)
+                                FROM   menu_image mi
+                                WHERE  mi.menuID = m.menuID
+                                GROUP BY mi.menuID
+                                LIMIT 1)
+                         WHEN 1 THEN '2번 이미지 없음'
+                         WHEN 2 THEN (SELECT mi2.imageURL
+                                      FROM   menu_image mi2
+                                      WHERE  mi2.imageOrder = 2
+                                      AND    mi2.menuID = m.menuID
+                                      LIMIT 1)
+                         END)
+                     END AS imageURL2,
+                     CASE (SELECT ISNULL(m.menuOptionId))
+                     WHEN 1 THEN '옵션 없음'
+                     ELSE '옵션 있음'
+                     END as menuOption
+             FROM      menu m
+             LEFT JOIN menu_image mi on m.menuID = mi.menuID
+             INNER JOIN restaurant r on m.restaurantID = r.id
+             WHERE     m.menuID = ?
+             GROUP BY  m.menuID;";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$menuID]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res;
+}
+
+function isValidMenuID($menuID)
+{
+    $pdo = pdoSqlConnect();
+    $query = "SELECT EXISTS (SELECT *
+                             FROM menu
+                             WHERE menuID = ?
+                             AND menuStatus = 1) AS exist;";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$menuID]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return intval($res[0]['exist']);
+}
+
+//No.8
+function menuOptions($menuID)
+{
+    $pdo = pdoSqlConnect();
+    $query = "SELECT     menuID, menuName, optionOrder, optionTitle, isEssential, multipleChoice, subOrder, subName, subPrice
+              FROM       menu as m
+              LEFT JOIN  option_order oo on m.menuOptionID = oo.optionID
+              INNER JOIN option_title ot on oo.optionTitleID = ot.optionTitleID
+              INNER JOIN sub_option so on ot.optionTitleID = so.optionTitleID
+              WHERE      m.menuID = ?
+              ORDER BY   optionOrder, subOrder;";
 
     $st = $pdo->prepare($query);
     $st->execute([$menuID]);
