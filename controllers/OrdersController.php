@@ -61,7 +61,7 @@ try {
                 echo json_encode($res, JSON_NUMERIC_CHECK);
                 break;
             }
-            if(!isValidPayment($paymentID)){
+            if(!isPaymentValid($paymentID)){
                 $res->isSuccess = FALSE;
                 $res->code = 2020;
                 $res->message = "존재하지 않는 paymentID 입니다.";
@@ -203,6 +203,56 @@ try {
             echo json_encode($res, JSON_UNESCAPED_UNICODE);
             break;
 
+        case "cancelOrder":
+            http_response_code(200);
+
+            $jwt = $_SERVER['HTTP_X_ACCESS_TOKEN'];
+
+            if(!isValidJWT($jwt, JWT_SECRET_KEY)){
+                $res->isSuccess = FALSE;
+                $res->code = 2009;
+                $res->message = "유효하지 않은 JWT 토큰입니다.";
+                echo json_encode($res, JSON_UNESCAPED_UNICODE);
+                break;
+            }
+
+            $userID = getDataByJWToken($jwt, JWT_SECRET_KEY)->userID;
+
+            if(!isUserIDExist($userID)){
+                $res->isSuccess = FALSE;
+                $res->code = 2010;
+                $res->message = "존재하지 않는 사용자의 JWT 토큰입니다.";
+                echo json_encode($res, JSON_UNESCAPED_UNICODE);
+                break;
+            }
+
+            $orderID = $vars['orderID'];
+
+            $userIDByOrderID = getUserIDByOrderID($orderID);
+
+            if(!isOrderIDExist($orderID)){
+                $res->isSuccess = FALSE;
+                $res->code = 2022;
+                $res->message = "주문취소 권한이 없습니다.";
+                echo json_encode($res, JSON_UNESCAPED_UNICODE);
+                break;
+            }
+
+            if($userID != $userIDByOrderID){
+                $res->isSuccess = FALSE;
+                $res->code = 2023;
+                $res->message = "주문취소 권한이 없습니다.";
+                echo json_encode($res, JSON_UNESCAPED_UNICODE);
+                break;
+            }
+
+            cancelOrder($orderID);
+            $res->isSuccess = TRUE;
+            $res->code = 1000;
+            $res->message = "주문취소 성공";
+            echo json_encode($res, JSON_UNESCAPED_UNICODE);
+            break;
+            
     }
 } catch (\Exception $e) {
     return getSQLErrorException($errorLogs, $e, $req);
