@@ -305,7 +305,7 @@ try {
                 break;
             }
 
-            if($isPhotoReview != 0 && $isPhotoReview != 1) {
+            if(($isPhotoReview != 0 && $isPhotoReview != 1) || $isPhotoReview == null) {
                 $res->isSuccess = FALSE;
                 $res->code = 2024;
                 $res->message = "isPhotoReview key값을 0 또는 1로 조회하세요.";
@@ -313,7 +313,7 @@ try {
                 break;
             }
 
-            if($align != 'latest' && $align != 'helpful' && $align != 'highRate' && $align != 'lowRate') {
+            if(($align != 'latest' && $align != 'helpful' && $align != 'highRate' && $align != 'lowRate') || $align == null) {
                 $res->isSuccess = FALSE;
                 $res->code = 2025;
                 $res->message = "align key값을 'latest', 'helpful', 'highRate', 'lowRate' 중 하나로 조회하세요.";
