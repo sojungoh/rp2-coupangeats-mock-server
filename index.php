@@ -8,6 +8,7 @@ require './pdos/ReviewPdo.php';
 require './pdos/AddressPdo.php';
 require './pdos/CouponsPdo.php';
 require './pdos/OrdersPdo.php';
+require './pdos/PaymentPdo.php';
 require './vendor/autoload.php';
 
 use \Monolog\Logger as Logger;
@@ -78,6 +79,11 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
 
     /* ******************   Orders   ****************** */
     $r->addRoute('POST', '/orders', ['OrdersController', 'receiveOrder']);
+    $r->addRoute('PATCH', '/orders/{orderID}', ['OrdersController', 'cancelOrder']);
+
+    /* ******************   Payment   ****************** */
+    $r->addRoute('POST', '/payment', ['PaymentController', 'registerPayment']);
+    $r->addRoute('GET', '/payment', ['PaymentController', 'getPaymentList']);
 
     /* ******************   JWT   ****************** */
     
@@ -157,11 +163,11 @@ switch ($routeInfo[0]) {
                 $handler = $routeInfo[1][1]; $vars = $routeInfo[2];
                 require './controllers/OrdersController.php';
                 break;
-            /*case 'ElementController':
+            case 'PaymentController':
                 $handler = $routeInfo[1][1]; $vars = $routeInfo[2];
-                require './controllers/ElementController.php';
+                require './controllers/PaymentController.php';
                 break;
-            case 'AskFAQController':
+            /*case 'AskFAQController':
                 $handler = $routeInfo[1][1]; $vars = $routeInfo[2];
                 require './controllers/AskFAQController.php';
                 break;*/
