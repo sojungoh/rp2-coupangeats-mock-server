@@ -49,6 +49,7 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
     $r->addRoute('GET', '/detail/{restaurantID}', ['RestaurantController', 'restaurantDetail']);
 
     $r->addRoute('GET', '/reviews/{restaurantID}', ['RestaurantController', 'reviewInfo']);
+    $r->addRoute('GET', '/restaurants/{restaurantID}/reviews', ['RestaurantController', 'reviewFilter']);
 
     /* ******************   Address   ****************** */
     $r->addRoute('POST', '/address', ['AddressController', 'addUserAddress']);

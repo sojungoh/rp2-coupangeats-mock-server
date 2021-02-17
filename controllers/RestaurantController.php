@@ -284,6 +284,57 @@ try {
             $res->message = "리뷰 기본정보 조회 성공";
             echo json_encode($res, JSON_UNESCAPED_UNICODE);
             break;
+
+        /*
+         * API No. 11
+         * API Name : 리뷰 필터적용 조회 API
+         * 마지막 수정 날짜 : 21.02.17
+         */
+        case "reviewFilter": //?isPhotoReview=&align=
+            http_response_code(200);
+
+            $restaurantID = $vars['restaurantID'];
+            $isPhotoReview = $_GET['isPhotoReview'];
+            $align = $_GET['align'];
+
+            if(!isValidRestaurantID($restaurantID)) {
+                $res->isSuccess = FALSE;
+                $res->code = 2008;
+                $res->message = "유효하지 않은 restaurantID 입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+
+            if($isPhotoReview != 0 && $isPhotoReview != 1) {
+                $res->isSuccess = FALSE;
+                $res->code = 2024;
+                $res->message = "isPhotoReview key값을 0 또는 1로 조회하세요.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+
+            if($align != 'latest' && $align != 'helpful' && $align != 'highRate' && $align != 'lowRate') {
+                $res->isSuccess = FALSE;
+                $res->code = 2025;
+                $res->message = "align key값을 'latest', 'helpful', 'highRate', 'lowRate' 중 하나로 조회하세요.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+
+            if(!isExistReview($restaurantID)) {
+                $res->isSuccess = FALSE;
+                $res->code = 3007;
+                $res->message = "리뷰가 등록되지 않은 음식점입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+
+            $res->result = reviewFilter($restaurantID, $isPhotoReview, $align);
+            $res->isSuccess = TRUE;
+            $res->code = 1000;
+            $res->message = "리뷰 '".$align."' 필터 적용 조회 성공";
+            echo json_encode($res, JSON_NUMERIC_CHECK);
+            break;
     }
 } catch (\Exception $e) {
     return getSQLErrorException($errorLogs, $e, $req);
