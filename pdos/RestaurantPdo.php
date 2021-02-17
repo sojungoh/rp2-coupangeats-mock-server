@@ -436,7 +436,7 @@ function reviewInfo($restaurantID)
               LEFT JOIN (SELECT restaurantID, IFNULL(ROUND(avg(starRating), 1), 0) AS avgstar,
                                 CONCAT(FORMAT(COUNT(id), 0),'개') AS reviewNumber
                          FROM   review
-                         WHERE restaurantID = 2
+                         WHERE restaurantID = ?
                          GROUP BY restaurantID) avgReview ON r2.id = avgReview.restaurantID
               LEFT JOIN user ON user.id = r.userID
               WHERE     r.restaurantID = ?;";
