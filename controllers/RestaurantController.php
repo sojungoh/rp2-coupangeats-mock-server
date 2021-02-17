@@ -251,6 +251,39 @@ try {
             $res->message = "매장/원산지조회 성공";
             echo json_encode($res, JSON_UNESCAPED_UNICODE);
             break;
+
+        /*
+         * API No. 10
+         * API Name : 리뷰 기본정보 조회 API
+         * 마지막 수정 날짜 : 21.02.18
+         */
+        case "reviewInfo":
+            http_response_code(200);
+
+            $restaurantID = $vars['restaurantID'];
+
+            if(!isValidRestaurantID($restaurantID)) {
+                $res->isSuccess = FALSE;
+                $res->code = 2008;
+                $res->message = "유효하지 않은 restaurantID입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+
+            if(!isExistReview($restaurantID)) {
+                $res->isSuccess = FALSE;
+                $res->code = 3007;
+                $res->message = "리뷰가 등록되지 않은 음식점입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+
+            $res->result = reviewInfo($restaurantID);
+            $res->isSuccess = TRUE;
+            $res->code = 1000;
+            $res->message = "리뷰 기본정보 조회 성공";
+            echo json_encode($res, JSON_UNESCAPED_UNICODE);
+            break;
     }
 } catch (\Exception $e) {
     return getSQLErrorException($errorLogs, $e, $req);

@@ -424,3 +424,46 @@ function restaurantDetail($restaurantID)
 
     return $res;
 }
+
+//No.10
+function reviewInfo($restaurantID)
+{
+    $pdo = pdoSqlConnect();
+    $query = "SELECT    r2.id AS restaurantID, r2.title, avgReview.avgstar, avgReview.reviewNumber, r.id AS reviewID, r.userID,
+                        CONCAT(LEFT(user.name, 1), '**') AS reviewer, r.contents, r.starRating AS star
+              FROM      restaurant AS r2
+              LEFT JOIN review AS r ON r2.id = r.restaurantID
+              LEFT JOIN (SELECT restaurantID, IFNULL(ROUND(avg(starRating), 1), 0) AS avgstar,
+                                CONCAT(FORMAT(COUNT(id), 0),'개') AS reviewNumber
+                         FROM   review
+                         WHERE restaurantID = 2
+                         GROUP BY restaurantID) avgReview ON r2.id = avgReview.restaurantID
+              LEFT JOIN user ON user.id = r.userID
+              WHERE     r.restaurantID = ?;";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$restaurantID]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res;
+}
+
+function isExistReview($restaurantID)
+{
+    $pdo = pdoSqlConnect();
+    $query = "SELECT EXISTS(SELECT * FROM review WHERE review.restaurantID = ?) as exist;";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$restaurantID]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return intval($res[0]['exist']);
+}
