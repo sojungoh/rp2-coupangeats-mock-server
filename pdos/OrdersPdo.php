@@ -128,7 +128,7 @@ function changeUsedCouponStatus($userID, $couponCode){
     $pdo = null;
 }
 
-function isValidPayment($paymentID){
+function isPaymentValid($paymentID){
     $pdo = pdoSqlConnect();
     $query = "SELECT EXISTS (SELECT * FROM payment WHERE id = ?) AS exist;";
 
@@ -178,4 +178,52 @@ function isSubOptionIDValid($subOptionID, $menuID){
     $pdo = null;
 
     return $res[0]['exist'];
+}
+
+function getUserIDByOrderID($orderID){
+    $pdo = pdoSqlConnect();
+    $query = "SELECT userID FROM `order`
+    WHERE id = ?;";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$orderID]);
+
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res[0]['userID'];
+}
+
+function isOrderIDExist($orderID){
+    $pdo = pdoSqlConnect();
+    $query = "SELECT EXISTS (SELECT * FROM `order` WHERE id = ?) AS exist;";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$orderID]);
+
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res[0]['exist'];
+}
+
+function cancelOrder($orderID){
+    $pdo = pdoSqlConnect();
+    $query = "UPDATE `order` SET `status` = 0 WHERE id = ?;";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$orderID]);
+
+    $st = null;
+    $pdo = null;
+}
+
+function getPastOrder($userID){
+    
 }
