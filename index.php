@@ -6,6 +6,7 @@ require './pdos/JWTPdo.php';
 require './pdos/RestaurantPdo.php';
 require './pdos/AddressPdo.php';
 require './pdos/CouponsPdo.php';
+require './pdos/OrdersPdo.php';
 require './vendor/autoload.php';
 
 use \Monolog\Logger as Logger;
@@ -61,6 +62,9 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
     $r->addRoute('GET', '/coupons/user', ['CouponsController', 'getUserCoupon']);
     $r->addRoute('GET', '/coupons/user/verify', ['CouponsController', 'verifyUserCoupon']);
     $r->addRoute('GET', '/coupons/cart', ['CouponsController', 'getAvailableCoupon']);
+
+    /* ******************   Orders   ****************** */
+    $r->addRoute('POST', '/orders', ['OrdersController', 'receiveOrder']);
 
     /* ******************   JWT   ****************** */
     
@@ -131,11 +135,11 @@ switch ($routeInfo[0]) {
                 $handler = $routeInfo[1][1]; $vars = $routeInfo[2];
                 require './controllers/CouponsController.php';
                 break;
-            /*case 'ReviewController':
+            case 'OrdersController':
                 $handler = $routeInfo[1][1]; $vars = $routeInfo[2];
-                require './controllers/ReviewController.php';
+                require './controllers/OrdersController.php';
                 break;
-            case 'ElementController':
+            /*case 'ElementController':
                 $handler = $routeInfo[1][1]; $vars = $routeInfo[2];
                 require './controllers/ElementController.php';
                 break;
