@@ -430,7 +430,15 @@ function reviewInfo($restaurantID)
 {
     $pdo = pdoSqlConnect();
     $query = "SELECT    r2.id AS restaurantID, r2.title, avgReview.avgstar, avgReview.reviewNumber, r.id AS reviewID, r.userID,
-                        CONCAT(LEFT(user.name, 1), '**') AS reviewer, r.contents, r.starRating AS star
+                        CONCAT(LEFT(user.name, 1), '**') AS reviewer, r.contents, r.starRating AS star,
+                        CASE (rca.dateTime)
+                        WHEN rca.dateTime < 1 THEN '오늘'
+                        WHEN rca.dateTime >= 1 AND rca.dateTime < 7 THEN '이번 주'
+                        WHEN rca.dateTime >= 7 AND rca.dateTime < 14 THEN '지난 주'
+                        WHEN rca.dateTime >= 14 AND rca.dateTime < LAST_DAY(NOW()) THEN '이번 달'
+                        WHEN rca.dateTime >= LAST_DAY(NOW()) AND rca.dateTime < (LAST_DAY(NOW())*2) THEN '지난 달'
+                        ELSE DATE_FORMAT(rca.createdAt, '%Y-%m-%d')
+                        END AS reviewCreatedAt
               FROM      restaurant AS r2
               LEFT JOIN review AS r ON r2.id = r.restaurantID
               LEFT JOIN (SELECT restaurantID, IFNULL(ROUND(avg(starRating), 1), 0) AS avgstar,
@@ -439,10 +447,14 @@ function reviewInfo($restaurantID)
                          WHERE restaurantID = ?
                          GROUP BY restaurantID) avgReview ON r2.id = avgReview.restaurantID
               LEFT JOIN user ON user.id = r.userID
-              WHERE     r.restaurantID = ?;";
+              LEFT JOIN (SELECT TIMESTAMPDIFF(DAY, r3.createdAt, NOW()) AS dateTime, r3.id, r3.createdAt as createdAt
+                         FROM   review AS r3
+                         INNER JOIN review ON r3.id = review.id) AS rca ON rca.id = r.id
+              WHERE     r.restaurantID = ?
+              ORDER BY  r.createdAt;";
 
     $st = $pdo->prepare($query);
-    $st->execute([$restaurantID]);
+    $st->execute([$restaurantID, $restaurantID]);
     $st->setFetchMode(PDO::FETCH_ASSOC);
     $res = $st->fetchAll();
 
@@ -466,4 +478,230 @@ function isExistReview($restaurantID)
     $pdo = null;
 
     return intval($res[0]['exist']);
+}
+
+//No.11
+function reviewFilter($restaurantID, $isPhotoReview, $align)
+{
+    $pdo = pdoSqlConnect();
+    $query = "";
+    switch ($align) {
+        case "latest":
+            $query = "SELECT    r.id AS reviewID, r.userID, CONCAT(LEFT(user.name, 1), '**') AS reviewer, r.contents, r.starRating AS star,
+                                orderedMenu.menu, IFNULL(h.helpful, '없음') AS helpfulNumber,
+                                IFNULL((CASE imageCount WHEN 0 THEN '이미지 없음'
+                                                        ELSE (SELECT ri.imageURL
+                                                              FROM review_image ri
+                                                              WHERE ri.imageorder = 1 AND r.id = ri.reviewID
+                                                              GROUP BY ri.reviewID)
+                                                        END), '포토리뷰 아님') AS imageURL1,
+                                IFNULL((CASE imageCount WHEN 0 THEN '이미지 없음' WHEN 1 THEN '2번 이미지 없음'
+                                                        ELSE (SELECT ri.imageURL
+                                                              FROM review_image AS ri
+                                                              WHERE ri.imageorder = 2 AND r.id = ri.reviewID
+                                                              GROUP BY ri.reviewID)
+                                                        END), '포토리뷰 아님') AS imageURL2,
+                                IFNULL((CASE imageCount WHEN 0 THEN '이미지 없음' WHEN 1 THEN '3번 이미지 없음' WHEN 2 THEN '3번 이미지 없음'
+                                                        ELSE (SELECT ri.imageURL
+                                                              FROM review_image AS ri, review AS r
+                                                              WHERE ri.imageorder = 3 AND r.id = ri.reviewID)
+                                                        END), '포토리뷰 아님') AS imageURL3,
+                                IFNULL((CASE imageCount WHEN 0 THEN '이미지 없음' WHEN 1 THEN '4번 이미지 없음'
+                                                        WHEN 2 THEN '4번 이미지 없음' WHEN 3 THEN '4번 이미지 없음'
+                                                        ELSE (SELECT ri.imageURL
+                                                              FROM review_image AS ri, review AS r
+                                                              WHERE ri.imageorder = 4 AND r.id = ri.reviewID)
+                                                        END), '포토리뷰 아님') AS imageURL4,
+                                IFNULL((CASE imageCount WHEN 5 THEN (SELECT ri.imageURL
+                                                                     FROM review_image AS ri, review AS r
+                                                                     WHERE ri.imageorder = 5 AND r.id = ri.reviewID)
+                                                        ELSE '5번 이미지 없음'
+                                                        END), '포토리뷰 아님') AS imageURL5
+                      FROM      review AS r
+                      LEFT JOIN user ON user.id = r.userID
+                      LEFT JOIN (SELECT rh.reviewID, CONCAT(FORMAT(COUNT(rh.isHelpful), 0),'명에게 도움이 되었습니다') AS helpful,
+                                        COUNT(rh.isHelpful) as howManyHelpful
+                                 FROM review_helpful AS rh
+                                 GROUP BY rh.reviewID) AS h ON r.id = h.reviewID
+                      LEFT JOIN (SELECT COUNT(ri2.imageURL) as imageCount, ri2.reviewID AS reviewID
+                                 FROM review_image AS ri2
+                                 INNER JOIN review ON ri2.reviewID = review.id
+                                 GROUP BY reviewID) AS image ON r.id = image.reviewID
+                      LEFT JOIN (SELECT    review.id AS reviewID, cart.orderID, menu.menuID,
+                                           GROUP_CONCAT(menu.menuName SEPARATOR ' • ') AS menu
+                                 FROM      review
+                                 LEFT JOIN cart ON review.orderID = cart.orderID
+                                 LEFT JOIN menu ON cart.menuID = menu.menuID
+                                 WHERE     review.id
+                                 GROUP BY review.id) AS orderedMenu ON orderedMenu.reviewID = r.id
+                      WHERE     r.restaurantID = ? AND r.isPhotoReview = ?
+                      ORDER BY  r.createdAt;";
+            break;
+
+        case "helpful":
+            $query = "SELECT    r.id AS reviewID, r.userID, CONCAT(LEFT(user.name, 1), '**') AS reviewer, r.contents, r.starRating AS star,
+                                orderedMenu.menu, IFNULL(h.helpful, '없음') AS helpfulNumber,
+                                IFNULL((CASE imageCount WHEN 0 THEN '이미지 없음'
+                                                        ELSE (SELECT ri.imageURL
+                                                              FROM review_image ri
+                                                              WHERE ri.imageorder = 1 AND r.id = ri.reviewID
+                                                              GROUP BY ri.reviewID)
+                                                        END), '포토리뷰 아님') AS imageURL1,
+                                IFNULL((CASE imageCount WHEN 0 THEN '이미지 없음' WHEN 1 THEN '2번 이미지 없음'
+                                                        ELSE (SELECT ri.imageURL
+                                                              FROM review_image AS ri
+                                                              WHERE ri.imageorder = 2 AND r.id = ri.reviewID
+                                                              GROUP BY ri.reviewID)
+                                                        END), '포토리뷰 아님') AS imageURL2,
+                                IFNULL((CASE imageCount WHEN 0 THEN '이미지 없음' WHEN 1 THEN '3번 이미지 없음' WHEN 2 THEN '3번 이미지 없음'
+                                                        ELSE (SELECT ri.imageURL
+                                                              FROM review_image AS ri, review AS r
+                                                              WHERE ri.imageorder = 3 AND r.id = ri.reviewID)
+                                                        END), '포토리뷰 아님') AS imageURL3,
+                                IFNULL((CASE imageCount WHEN 0 THEN '이미지 없음' WHEN 1 THEN '4번 이미지 없음'
+                                                        WHEN 2 THEN '4번 이미지 없음' WHEN 3 THEN '4번 이미지 없음'
+                                                        ELSE (SELECT ri.imageURL
+                                                              FROM review_image AS ri, review AS r
+                                                              WHERE ri.imageorder = 4 AND r.id = ri.reviewID)
+                                                        END), '포토리뷰 아님') AS imageURL4,
+                                IFNULL((CASE imageCount WHEN 5 THEN (SELECT ri.imageURL
+                                                                     FROM review_image AS ri, review AS r
+                                                                     WHERE ri.imageorder = 5 AND r.id = ri.reviewID)
+                                                        ELSE '5번 이미지 없음'
+                                                        END), '포토리뷰 아님') AS imageURL5
+                      FROM      review AS r
+                      LEFT JOIN user ON user.id = r.userID
+                      LEFT JOIN (SELECT rh.reviewID, CONCAT(FORMAT(COUNT(rh.isHelpful), 0),'명에게 도움이 되었습니다') AS helpful,
+                                        COUNT(rh.isHelpful) as howManyHelpful
+                                 FROM review_helpful AS rh
+                                 GROUP BY rh.reviewID) AS h ON r.id = h.reviewID
+                      LEFT JOIN (SELECT COUNT(ri2.imageURL) as imageCount, ri2.reviewID AS reviewID
+                                 FROM review_image AS ri2
+                                 INNER JOIN review ON ri2.reviewID = review.id
+                                 GROUP BY reviewID) AS image ON r.id = image.reviewID
+                      LEFT JOIN (SELECT    review.id AS reviewID, cart.orderID, menu.menuID,
+                                           GROUP_CONCAT(menu.menuName SEPARATOR ' • ') AS menu
+                                 FROM      review
+                                 LEFT JOIN cart ON review.orderID = cart.orderID
+                                 LEFT JOIN menu ON cart.menuID = menu.menuID
+                                 WHERE     review.id
+                                 GROUP BY review.id) AS orderedMenu ON orderedMenu.reviewID = r.id
+                      WHERE     r.restaurantID = ? AND r.isPhotoReview = ?
+                      ORDER BY  h.howManyHelpful DESC;";
+            break;
+
+        case "highRate":
+            $query = "SELECT    r.id AS reviewID, r.userID, CONCAT(LEFT(user.name, 1), '**') AS reviewer, r.contents, r.starRating AS star,
+                                orderedMenu.menu, IFNULL(h.helpful, '없음') AS helpfulNumber,
+                                IFNULL((CASE imageCount WHEN 0 THEN '이미지 없음'
+                                                        ELSE (SELECT ri.imageURL
+                                                              FROM review_image ri
+                                                              WHERE ri.imageorder = 1 AND r.id = ri.reviewID
+                                                              GROUP BY ri.reviewID)
+                                                        END), '포토리뷰 아님') AS imageURL1,
+                                IFNULL((CASE imageCount WHEN 0 THEN '이미지 없음' WHEN 1 THEN '2번 이미지 없음'
+                                                        ELSE (SELECT ri.imageURL
+                                                              FROM review_image AS ri
+                                                              WHERE ri.imageorder = 2 AND r.id = ri.reviewID
+                                                              GROUP BY ri.reviewID)
+                                                        END), '포토리뷰 아님') AS imageURL2,
+                                IFNULL((CASE imageCount WHEN 0 THEN '이미지 없음' WHEN 1 THEN '3번 이미지 없음' WHEN 2 THEN '3번 이미지 없음'
+                                                        ELSE (SELECT ri.imageURL
+                                                              FROM review_image AS ri, review AS r
+                                                              WHERE ri.imageorder = 3 AND r.id = ri.reviewID)
+                                                        END), '포토리뷰 아님') AS imageURL3,
+                                IFNULL((CASE imageCount WHEN 0 THEN '이미지 없음' WHEN 1 THEN '4번 이미지 없음'
+                                                        WHEN 2 THEN '4번 이미지 없음' WHEN 3 THEN '4번 이미지 없음'
+                                                        ELSE (SELECT ri.imageURL
+                                                              FROM review_image AS ri, review AS r
+                                                              WHERE ri.imageorder = 4 AND r.id = ri.reviewID)
+                                                        END), '포토리뷰 아님') AS imageURL4,
+                                IFNULL((CASE imageCount WHEN 5 THEN (SELECT ri.imageURL
+                                                                     FROM review_image AS ri, review AS r
+                                                                     WHERE ri.imageorder = 5 AND r.id = ri.reviewID)
+                                                        ELSE '5번 이미지 없음'
+                                                        END), '포토리뷰 아님') AS imageURL5
+                      FROM      review AS r
+                      LEFT JOIN user ON user.id = r.userID
+                      LEFT JOIN (SELECT rh.reviewID, CONCAT(FORMAT(COUNT(rh.isHelpful), 0),'명에게 도움이 되었습니다') AS helpful,
+                                        COUNT(rh.isHelpful) as howManyHelpful
+                                 FROM review_helpful AS rh
+                                 GROUP BY rh.reviewID) AS h ON r.id = h.reviewID
+                      LEFT JOIN (SELECT COUNT(ri2.imageURL) as imageCount, ri2.reviewID AS reviewID
+                                 FROM review_image AS ri2
+                                 INNER JOIN review ON ri2.reviewID = review.id
+                                 GROUP BY reviewID) AS image ON r.id = image.reviewID
+                      LEFT JOIN (SELECT    review.id AS reviewID, cart.orderID, menu.menuID,
+                                           GROUP_CONCAT(menu.menuName SEPARATOR ' • ') AS menu
+                                 FROM      review
+                                 LEFT JOIN cart ON review.orderID = cart.orderID
+                                 LEFT JOIN menu ON cart.menuID = menu.menuID
+                                 WHERE     review.id
+                                 GROUP BY review.id) AS orderedMenu ON orderedMenu.reviewID = r.id
+                      WHERE     r.restaurantID = ? AND r.isPhotoReview = ?
+                      ORDER BY  r.starRating DESC;";
+            break;
+
+        case "lowRate":
+            $query = "SELECT    r.id AS reviewID, r.userID, CONCAT(LEFT(user.name, 1), '**') AS reviewer, r.contents, r.starRating AS star,
+                                orderedMenu.menu, IFNULL(h.helpful, '없음') AS helpfulNumber,
+                                IFNULL((CASE imageCount WHEN 0 THEN '이미지 없음'
+                                                        ELSE (SELECT ri.imageURL
+                                                              FROM review_image ri
+                                                              WHERE ri.imageorder = 1 AND r.id = ri.reviewID
+                                                              GROUP BY ri.reviewID)
+                                                        END), '포토리뷰 아님') AS imageURL1,
+                                IFNULL((CASE imageCount WHEN 0 THEN '이미지 없음' WHEN 1 THEN '2번 이미지 없음'
+                                                        ELSE (SELECT ri.imageURL
+                                                              FROM review_image AS ri
+                                                              WHERE ri.imageorder = 2 AND r.id = ri.reviewID
+                                                              GROUP BY ri.reviewID)
+                                                        END), '포토리뷰 아님') AS imageURL2,
+                                IFNULL((CASE imageCount WHEN 0 THEN '이미지 없음' WHEN 1 THEN '3번 이미지 없음' WHEN 2 THEN '3번 이미지 없음'
+                                                        ELSE (SELECT ri.imageURL
+                                                              FROM review_image AS ri, review AS r
+                                                              WHERE ri.imageorder = 3 AND r.id = ri.reviewID)
+                                                        END), '포토리뷰 아님') AS imageURL3,
+                                IFNULL((CASE imageCount WHEN 0 THEN '이미지 없음' WHEN 1 THEN '4번 이미지 없음'
+                                                        WHEN 2 THEN '4번 이미지 없음' WHEN 3 THEN '4번 이미지 없음'
+                                                        ELSE (SELECT ri.imageURL
+                                                              FROM review_image AS ri, review AS r
+                                                              WHERE ri.imageorder = 4 AND r.id = ri.reviewID)
+                                                        END), '포토리뷰 아님') AS imageURL4,
+                                IFNULL((CASE imageCount WHEN 5 THEN (SELECT ri.imageURL
+                                                                     FROM review_image AS ri, review AS r
+                                                                     WHERE ri.imageorder = 5 AND r.id = ri.reviewID)
+                                                        ELSE '5번 이미지 없음'
+                                                        END), '포토리뷰 아님') AS imageURL5
+                      FROM      review AS r
+                      LEFT JOIN user ON user.id = r.userID
+                      LEFT JOIN (SELECT rh.reviewID, CONCAT(FORMAT(COUNT(rh.isHelpful), 0),'명에게 도움이 되었습니다') AS helpful,
+                                        COUNT(rh.isHelpful) as howManyHelpful
+                                 FROM review_helpful AS rh
+                                 GROUP BY rh.reviewID) AS h ON r.id = h.reviewID
+                      LEFT JOIN (SELECT COUNT(ri2.imageURL) as imageCount, ri2.reviewID AS reviewID
+                                 FROM review_image AS ri2
+                                 INNER JOIN review ON ri2.reviewID = review.id
+                                 GROUP BY reviewID) AS image ON r.id = image.reviewID
+                      LEFT JOIN (SELECT    review.id AS reviewID, cart.orderID, menu.menuID,
+                                           GROUP_CONCAT(menu.menuName SEPARATOR ' • ') AS menu
+                                 FROM      review
+                                 LEFT JOIN cart ON review.orderID = cart.orderID
+                                 LEFT JOIN menu ON cart.menuID = menu.menuID
+                                 WHERE     review.id
+                                 GROUP BY review.id) AS orderedMenu ON orderedMenu.reviewID = r.id
+                      WHERE     r.restaurantID = ? AND r.isPhotoReview = ?
+                      ORDER BY  r.starRating;";
+            break;
+    }
+
+    $st = $pdo->prepare($query);
+    $st->execute([$restaurantID, $isPhotoReview]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res;
 }
