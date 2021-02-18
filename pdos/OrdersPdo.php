@@ -78,11 +78,9 @@ function getOrderInfo($orderID){
 
 function getOrderMenuInfo($orderID){
     $pdo = pdoSqlConnect();
-    $query = "SELECT cart.menuID, menu.menuName, cart.menuQuantity, cart.subOptionID, sub_option.subName
-    FROM cart
-    INNER JOIN menu ON menu.menuID = cart.menuID
-    LEFT JOIN sub_option ON sub_option.subID = cart.subOptionID
-    WHERE cart.orderID = ?;";
+    $query = "SELECT DISTINCT cart.menuID, menuName, menuQuantity FROM cart
+    INNER JOIN menu ON cart.menuID = menu.menuID
+    WHERE orderID = ?;";
 
     $st = $pdo->prepare($query);
     $st->execute([$orderID]);
@@ -95,6 +93,44 @@ function getOrderMenuInfo($orderID){
 
     return $res;
 }
+
+function getSubOptionInfo($orderID, $menuID){
+    $pdo = pdoSqlConnect();
+    $query = "SELECT subOptionID, sub_option.subName FROM cart
+    INNER JOIN sub_option ON subOptionID = sub_option.subID
+    WHERE orderID = ? AND menuID = ?;";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$orderID, $menuID]);
+
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res;
+}
+
+// function getOrderMenuInfo($orderID){
+//     $pdo = pdoSqlConnect();
+//     $query = "SELECT cart.menuID, menu.menuName, cart.menuQuantity, cart.subOptionID, sub_option.subName
+//     FROM cart
+//     INNER JOIN menu ON menu.menuID = cart.menuID
+//     LEFT JOIN sub_option ON sub_option.subID = cart.subOptionID
+//     WHERE cart.orderID = ?;";
+
+//     $st = $pdo->prepare($query);
+//     $st->execute([$orderID]);
+
+//     $st->setFetchMode(PDO::FETCH_ASSOC);
+//     $res = $st->fetchAll();
+
+//     $st = null;
+//     $pdo = null;
+
+//     return $res;
+// }
 
 function isAvaliableCoupon($restaurantID, $couponCode){
     $pdo = pdoSqlConnect();
@@ -224,6 +260,50 @@ function cancelOrder($orderID){
     $pdo = null;
 }
 
-function getPastOrder($userID){
-    
+function getPastOrders($userID){
+    $pdo = pdoSqlConnect();
+    $query = "SELECT restaurant.id AS restaurantID, restaurant.title AS restaurantTitle, restaurant_image.imageURL AS restaurantImg,
+    `order`.id AS orderID, `order`.createdAt AS orderTime, `order`.price AS totalPrice,  
+    `order`.status AS orderStatus, 
+    `order`.reviewStatus, ifnull(review.starRating, 'no value') AS starRating
+    FROM `order`
+    INNER JOIN restaurant ON `order`.restaurantID = restaurant.id
+    INNER JOIN restaurant_image ON restaurant.id = restaurant_image.restaurantID AND restaurant_image.imageOrder = 1
+    LEFT JOIN review ON `order`.id = review.orderID
+    WHERE `order`.userID = ? AND (deliveryStatus = 0 OR `order`.status = 0);";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$userID]);
+
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res;
+}
+
+function getPreparingOrders($userID){
+    $pdo = pdoSqlConnect();
+    $query = "SELECT restaurant.id AS restaurantID, restaurant.title AS restaurantTitle, restaurant_image.imageURL AS restaurantImg,
+    `order`.id AS orderID, `order`.createdAt AS orderTime, `order`.price AS totalPrice,  
+    `order`.status AS orderStatus, 
+    `order`.reviewStatus, ifnull(review.starRating, 'no value') AS starRating
+    FROM `order`
+    INNER JOIN restaurant ON `order`.restaurantID = restaurant.id
+    INNER JOIN restaurant_image ON restaurant.id = restaurant_image.restaurantID AND restaurant_image.imageOrder = 1
+    LEFT JOIN review ON `order`.id = review.orderID
+    WHERE `order`.userID = ? AND deliveryStatus = 1 AND `order`.status = 1;";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$userID]);
+
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res;
 }

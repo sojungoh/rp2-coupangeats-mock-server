@@ -72,6 +72,7 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
 
     /* ******************   Orders   ****************** */
     $r->addRoute('POST', '/orders', ['OrdersController', 'receiveOrder']);
+    $r->addRoute('GET', '/orders', ['OrdersController', 'getOrderList']);
     $r->addRoute('PATCH', '/orders/{orderID}', ['OrdersController', 'cancelOrder']);
 
     /* ******************   Payment   ****************** */

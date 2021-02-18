@@ -196,7 +196,15 @@ try {
             $res->result = new StdClass();
             $res->result->restaurantInfo = getOrderRestaurantInfo($orderID);
             $res->result->orderInfo = getOrderInfo($orderID);
-            $res->result->menuInfo = getOrderMenuInfo($orderID);
+
+            $menuList = array();
+            $menuList = getOrderMenuInfo($orderID);
+            for($x = 0; $x < count($menuList); $x++){
+                $menuID = $menuList[$x]['menuID'];
+
+                $res->result->menuInfo[$x] = $menuList[$x];
+                $res->result->menuInfo[$x]['subInfo'] = getSubOptionInfo($orderID, $menuID);
+            }
             $res->isSuccess = TRUE;
             $res->code = 1000;
             $res->message = "매장에서 주문을 확인하고 있습니다.";
@@ -233,7 +241,7 @@ try {
             if(!isOrderIDExist($orderID)){
                 $res->isSuccess = FALSE;
                 $res->code = 2022;
-                $res->message = "주문취소 권한이 없습니다.";
+                $res->message = "존재하지 않는 orderID 입니다.";
                 echo json_encode($res, JSON_UNESCAPED_UNICODE);
                 break;
             }
@@ -252,6 +260,91 @@ try {
             $res->message = "주문취소 성공";
             echo json_encode($res, JSON_UNESCAPED_UNICODE);
             break;
+
+        case "getOrderList":
+            http_response_code(200);
+
+            $jwt = $_SERVER['HTTP_X_ACCESS_TOKEN'];
+
+            if(!isValidJWT($jwt, JWT_SECRET_KEY)){
+                $res->isSuccess = FALSE;
+                $res->code = 2009;
+                $res->message = "유효하지 않은 JWT 토큰입니다.";
+                echo json_encode($res, JSON_UNESCAPED_UNICODE);
+                break;
+            }
+
+            $userID = getDataByJWToken($jwt, JWT_SECRET_KEY)->userID;
+
+            if(!isUserIDExist($userID)){
+                $res->isSuccess = FALSE;
+                $res->code = 2010;
+                $res->message = "존재하지 않는 사용자의 JWT 토큰입니다.";
+                echo json_encode($res, JSON_UNESCAPED_UNICODE);
+                break;
+            }
+
+            $q = $_GET['q'];
+
+            if($q != 'past' AND $q != 'now'){
+                $res->isSuccess = FALSE;
+                $res->code = 2019;
+                $res->message = "양식에 맞는 파라미터 값을 입력해주세요.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+
+            if($q == 'past'){
+                $pastOrders = array();
+                $pastOrders = getPastOrders($userID);
+                
+                for($x = 0; $x < count($pastOrders); $x++){
+
+                    $res->orderList[$x] = $pastOrders[$x];
+                    $orderID = $pastOrders[$x]['orderID'];
+
+                    $menuList = array();
+                    $menuList = getOrderMenuInfo($orderID);
+
+                    for($y = 0; $y < count($menuList); $y++){
+                        $menuID = $menuList[$y]['menuID'];
+
+                        $res->orderList[$x]['menuInfo'][$y] = $menuList[$y];
+                        $res->orderList[$x]['menuInfo'][$y]['subInfo'] = getSubOptionInfo($orderID, $menuID);
+                    }
+                }
+                $res->isSuccess = TRUE;
+                $res->code = 1000;
+                $res->message = "과거 주문 내역 조회 성공";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+
+            if($q == 'now'){
+                $preparingOrders = array();
+                $preparingOrders = getPreparingOrders($userID);
+
+                for($x = 0; $x < count($preparingOrders); $x++){
+
+                    $res->orderList[$x] = $preparingOrders[$x];
+                    $orderID = $preparingOrders[$x]['orderID'];
+
+                    $menuList = array();
+                    $menuList = getOrderMenuInfo($orderID);
+
+                    for($y = 0; $y < count($menuList); $y++){
+                        $menuID = $menuList[$y]['menuID'];
+
+                        $res->orderList[$x]['menuInfo'][$y] = $menuList[$y];
+                        $res->orderList[$x]['menuInfo'][$y]['subInfo'] = getSubOptionInfo($orderID, $menuID);
+                    }
+                }
+                $res->isSuccess = TRUE;
+                $res->code = 1000;
+                $res->message = "준비중 조회 성공";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
             
     }
 } catch (\Exception $e) {
