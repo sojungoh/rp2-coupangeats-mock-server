@@ -574,6 +574,7 @@ function reviewFilter($restaurantID, $isPhotoReview, $align)
                       LEFT JOIN (SELECT rh.reviewID, CONCAT(FORMAT(COUNT(rh.isHelpful), 0),'명에게 도움이 되었습니다') AS helpful,
                                         COUNT(rh.isHelpful) as howManyHelpful
                                  FROM review_helpful AS rh
+                                 WHERE rh.isHelpful = 1
                                  GROUP BY rh.reviewID) AS h ON r.id = h.reviewID
                       LEFT JOIN (SELECT COUNT(ri2.imageURL) as imageCount, ri2.reviewID AS reviewID
                                  FROM review_image AS ri2
