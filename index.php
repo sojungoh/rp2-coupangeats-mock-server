@@ -55,7 +55,7 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
     $r->addRoute('GET', '/restaurants/{restaurantID}/reviews', ['RestaurantController', 'reviewFilter']);
 
     /* ******************   Review   ****************** */
-    $r->addRoute('POST', '/reviews/{reviewID}/{userID}/{isHelpful}', ['ReviewController', 'isHelpfulReview']);
+    $r->addRoute('POST', '/reviews/{reviewID}/isHelpful', ['ReviewController', 'isHelpfulReview']);
     $r->addRoute('GET', '/ordered-menu/{orderID}', ['ReviewController', 'whatIsTheMenu']);
     $r->addRoute('POST', '/reviews', ['ReviewController', 'registerReview']);
 
