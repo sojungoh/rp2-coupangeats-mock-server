@@ -60,6 +60,24 @@ function wasHelpfulReview($reviewID, $userID) //이전에 1로 등록했었으�
     return intval($res[0]['wasHelpful']);
 }
 
+function howMuchHelpful($reviewID)
+{
+    $pdo = pdoSqlConnect();
+    $query = "SELECT CONCAT(COUNT(isHelpful), '명에게 도움이 되었습니다') as howMuchHelpful
+              FROM   review_helpful
+              WHERE  reviewID = ? AND isHelpful = 1;";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$reviewID]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res;;
+}
+
 function isValidReviewID($reviewID)
 {
     $pdo = pdoSqlConnect();

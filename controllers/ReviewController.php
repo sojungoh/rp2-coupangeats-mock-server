@@ -53,6 +53,7 @@ try {
 
                 if($wasHelpful == 1) { //도움 됨을 또 누른 경우 = 도움 됨/안됨 둘 다 아님 = 9로 변경.
                     noneHelpful($reviewID, $userID);
+                    $res->result = howMuchHelpful($reviewID);
                     $res->isSuccess = TRUE;
                     $res->code = 1000;
                     $res->message = "도움 해제 성공";
@@ -61,6 +62,7 @@ try {
                 }
                 else { //도움 된다(1)로 바꾸거나 등록하고 싶다.
                     isHelpful($reviewID, $userID, $isHelpful);
+                    $res->result = howMuchHelpful($reviewID);
                     $res->isSuccess = TRUE;
                     $res->code = 1000;
                     $res->message = "도움 됨 등록/변경 성공";
@@ -73,6 +75,7 @@ try {
 
                 if($wasHelpful == 0) { //도움 안됨을 또 누른 경우 = 도움 됨/안됨 둘 다 아님 = 9로 변경.
                     noneHelpful($reviewID, $userID);
+                    $res->result = howMuchHelpful($reviewID);
                     $res->isSuccess = TRUE;
                     $res->code = 1000;
                     $res->message = "도움 해제 성공";
@@ -81,6 +84,7 @@ try {
                 }
                 else { //도움 안된다(0)고 등록하거나 바꾸고 싶다.
                     isNotHelpful($reviewID, $userID, $isHelpful);
+                    $res->result = howMuchHelpful($reviewID);
                     $res->isSuccess = TRUE;
                     $res->code = 1000;
                     $res->message = "도움 안됨 등록/변경 성공";
