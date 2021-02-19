@@ -129,12 +129,30 @@ try {
         /*
          * API No. 14
          * API Name : 리뷰 등록 API
-         * 마지막 수정 날짜 : 21.02.18
+         * 마지막 수정 날짜 : 21.02.19
          */
         case "registerReview":
             http_response_code(200);
 
+            $jwt = $_SERVER['HTTP_X_ACCESS_TOKEN'];
+            $userID = getDataByJWToken($jwt, JWT_SECRET_KEY)->userID;
             $orderID = $vars['orderID'];
+
+            if(!isValidJWT($jwt, JWT_SECRET_KEY)){
+                $res->isSuccess = FALSE;
+                $res->code = 2009;
+                $res->message = "유효하지 않은 JWT 토큰입니다.";
+                echo json_encode($res, JSON_UNESCAPED_UNICODE);
+                break;
+            }
+
+            if(!isUserIDExist($userID)){
+                $res->isSuccess = FALSE;
+                $res->code = 2010;
+                $res->message = "존재하지 않는 사용자의 JWT 토큰입니다.";
+                echo json_encode($res, JSON_UNESCAPED_UNICODE);
+                break;
+            }
 
             if(!isValidOrderID($orderID)) {
                 $res->isSuccess = FALSE;
