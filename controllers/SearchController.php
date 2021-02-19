@@ -54,7 +54,7 @@ try {
 
             if($align == 'recommend') {
                 $res->isSuccess = FALSE;
-                $res->code = 2030;
+                $res->code = 3010;
                 $res->message = "현재 추천순 필터는 적용되지 않습니다.";
                 echo json_encode($res, JSON_NUMERIC_CHECK);
                 break;
