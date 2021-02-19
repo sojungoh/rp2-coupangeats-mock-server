@@ -5,6 +5,7 @@ require './pdos/UsersPdo.php';
 require './pdos/JWTPdo.php';
 require './pdos/RestaurantPdo.php';
 require './pdos/ReviewPdo.php';
+require './pdos/SearchPdo.php';
 require './pdos/AddressPdo.php';
 require './pdos/CouponsPdo.php';
 require './pdos/OrdersPdo.php';
@@ -41,7 +42,6 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
 
     $r->addRoute('GET', '/categories', ['RestaurantController', 'categories']);
     $r->addRoute('GET', '/filters', ['RestaurantController', 'filters']);
-    $r->addRoute('GET', '/restaurants', ['RestaurantController', 'filterSearch']); //YET
     $r->addRoute('GET', '/basic-info/{restaurantID}', ['RestaurantController', 'basicInfo']);
     $r->addRoute('GET', '/restaurants/{restaurantID}/menu', ['RestaurantController', 'getMenu']);
 
@@ -59,6 +59,8 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
     $r->addRoute('GET', '/ordered-menu/{orderID}', ['ReviewController', 'whatIsTheMenu']);
     $r->addRoute('POST', '/reviews', ['ReviewController', 'registerReview']);
 
+    /* ******************   Search   ****************** */
+    $r->addRoute('GET', '/restaurants', ['SearchController', 'filterSearch']);
 
     /* ******************   Address   ****************** */
     $r->addRoute('POST', '/address', ['AddressController', 'addUserAddress']);
@@ -167,10 +169,10 @@ switch ($routeInfo[0]) {
                 $handler = $routeInfo[1][1]; $vars = $routeInfo[2];
                 require './controllers/PaymentController.php';
                 break;
-            /*case 'AskFAQController':
+            case 'SearchController':
                 $handler = $routeInfo[1][1]; $vars = $routeInfo[2];
-                require './controllers/AskFAQController.php';
-                break;*/
+                require './controllers/SearchController.php';
+                break;
         }
 
         break;
