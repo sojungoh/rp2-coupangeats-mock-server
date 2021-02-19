@@ -2,20 +2,80 @@
 
 /* **************************     HeatherAPI      ************************* */
 //No.12
-function isHelpfulReview($reviewID, $userID, $isHelpful)
+function noneHelpful($reviewID, $userID) //9로 변경
 {
     $pdo = pdoSqlConnect();
-    $query = "";
+    $query = "UPDATE review_helpful
+              SET    isHelpful = 9
+              WHERE  reviewID = ? AND userID = ?;";
 
     $st = $pdo->prepare($query);
-    $st->execute([$reviewID, $userID, $isHelpful]);
+    $st->execute([$reviewID, $userID]);
+
+    $st = null;
+    $pdo = null;
+}
+
+function isHelpful($reviewID, $userID, $isHelpful) //1로 등록 또는 변경
+{
+    $pdo = pdoSqlConnect();
+    $query = "INSERT INTO review_helpful(userID, reviewID, isHelpful) VALUES(?,?,?)
+              ON DUPLICATE KEY UPDATE reviewID = ?, userID = ?, isHelpful = 1;";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$userID, $reviewID, $isHelpful, $reviewID, $userID]);
+
+    $st = null;
+    $pdo = null;
+}
+
+function isNotHelpful($reviewID, $userID, $isHelpful) //0으로 등록 또는 변경
+{
+    $pdo = pdoSqlConnect();
+    $query = "INSERT INTO review_helpful(userID, reviewID, isHelpful) VALUES(?,?,?)
+              ON DUPLICATE KEY UPDATE reviewID = ?, userID = ?, isHelpful = 0;";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$userID, $reviewID, $isHelpful, $reviewID, $userID]);
+
+    $st = null;
+    $pdo = null;
+}
+
+function wasHelpfulReview($reviewID, $userID) //이전에 1로 등록했었으면 1, 0으로 등록했었으면 0, 9로 아무것도 하지 않고 싶었으면 9, 없으면 없음 리턴
+{
+    $pdo = pdoSqlConnect();
+    $query = "SELECT IFNULL(MAX(isHelpful), 4) as wasHelpful
+              FROM   review_helpful
+              WHERE  reviewID = ? AND userID = ?;";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$reviewID, $userID]);
     $st->setFetchMode(PDO::FETCH_ASSOC);
     $res = $st->fetchAll();
 
     $st = null;
     $pdo = null;
 
-    return $res;
+    return intval($res[0]['wasHelpful']);
+}
+
+function howMuchHelpful($reviewID)
+{
+    $pdo = pdoSqlConnect();
+    $query = "SELECT CONCAT(COUNT(isHelpful), '명에게 도움이 되었습니다') as howMuchHelpful
+              FROM   review_helpful
+              WHERE  reviewID = ? AND isHelpful = 1;";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$reviewID]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res;;
 }
 
 function isValidReviewID($reviewID)
