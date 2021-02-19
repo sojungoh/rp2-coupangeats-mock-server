@@ -75,7 +75,7 @@ try {
                 $res->isSuccess = TRUE;
                 $res->code = 1000;
                 $res->message = "필터적용 성공";
-                echo json_encode($res, JSON_NUMERIC_CHECK);
+                echo json_encode($res, JSON_UNESCAPED_UNICODE);
                 break;
             }
 
@@ -94,7 +94,7 @@ try {
                 $res->isSuccess = TRUE;
                 $res->code = 1000;
                 $res->message = "필터적용 성공";
-                echo json_encode($res, JSON_NUMERIC_CHECK);
+                echo json_encode($res, JSON_UNESCAPED_UNICODE);
                 break;
             }
 
@@ -113,7 +113,7 @@ try {
                 $res->isSuccess = TRUE;
                 $res->code = 1000;
                 $res->message = "필터적용 성공";
-                echo json_encode($res, JSON_NUMERIC_CHECK);
+                echo json_encode($res, JSON_UNESCAPED_UNICODE);
                 break;
             }
 
@@ -132,7 +132,7 @@ try {
                 $res->isSuccess = TRUE;
                 $res->code = 1000;
                 $res->message = "필터적용 성공";
-                echo json_encode($res, JSON_NUMERIC_CHECK);
+                echo json_encode($res, JSON_UNESCAPED_UNICODE);
                 break;
             }
 
@@ -151,7 +151,7 @@ try {
                 $res->isSuccess = TRUE;
                 $res->code = 1000;
                 $res->message = "필터적용 성공";
-                echo json_encode($res, JSON_NUMERIC_CHECK);
+                echo json_encode($res, JSON_UNESCAPED_UNICODE);
                 break;
             }
 
@@ -170,7 +170,7 @@ try {
                 $res->isSuccess = TRUE;
                 $res->code = 1000;
                 $res->message = "필터적용 성공";
-                echo json_encode($res, JSON_NUMERIC_CHECK);
+                echo json_encode($res, JSON_UNESCAPED_UNICODE);
                 break;
             }
 
@@ -189,7 +189,7 @@ try {
                 $res->isSuccess = TRUE;
                 $res->code = 1000;
                 $res->message = "필터적용 성공";
-                echo json_encode($res, JSON_NUMERIC_CHECK);
+                echo json_encode($res, JSON_UNESCAPED_UNICODE);
                 break;
             }
 
