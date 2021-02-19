@@ -1,8 +1,8 @@
 <?php
 
 //Soi 테스트용 DB
-//function pdoSqlConnect()
-//{
+// function pdoSqlConnect()
+// {
 //    try {
 //        $DB_HOST = "13.124.163.139";
 //        $DB_NAME = "coupang_eatsdb";
@@ -14,7 +14,7 @@
 //    } catch (\Exception $e) {
 //        echo $e->getMessage();
 //    }
-//}
+// }
 
 //Heather 테스트용 DB
 // function pdoSqlConnect()

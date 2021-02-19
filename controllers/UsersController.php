@@ -178,7 +178,7 @@ try {
 
             $client = new Client($account_sid, $auth_token);
         
-            $client->messages->create(// Where to send a text message (your cell phone?)
+            $client->messages->create(
                     "+82{$phoneNumber}",
                     array(
                         'from' => $twilio_number,
